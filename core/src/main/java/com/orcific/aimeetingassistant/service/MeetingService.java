@@ -21,13 +21,15 @@ public class MeetingService {
     public MeetingNotes summarizeMeeting(String transcript) {
         String prompt = buildPrompt(transcript);
 
-        String aiResponse = generateResponse(prompt);
+        LOGGER.info("Prompt message: " + prompt);
 
+        String aiResponse = generateResponse(prompt);
+        LOGGER.info("AI response before parsing: " + aiResponse);
         return parseResponseToMeetingNotes(aiResponse);
     }
 
     private MeetingNotes parseResponseToMeetingNotes(String aiResponse) {
-        LOGGER.debug("Parsing AI response into MeetingNotes.");
+        LOGGER.info("Parsing AI response into MeetingNotes.");
         try{
             MeetingNotes notes = objectMapper.readValue(aiResponse, MeetingNotes.class);
             LOGGER.info("AI response successfully parsed into MeetingNotes.");

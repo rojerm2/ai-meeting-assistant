@@ -8,9 +8,9 @@ Use exactly this schema:
 
 {
   "summary": "",
-  "keyDecisions": [],
-  "actionItems": [],
-  "openQuestions": []
+  "keyDecisions": [],  //array of Strings
+  "actionItems": [],    //array of Strings
+  "openQuestions": []   //array of Strings
 }
 
 Rules:

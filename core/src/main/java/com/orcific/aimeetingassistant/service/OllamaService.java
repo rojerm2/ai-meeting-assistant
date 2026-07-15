@@ -37,6 +37,7 @@ public class OllamaService {
             return response.response();
         }
         catch (RestClientException | NullPointerException e) {
+            e.printStackTrace();
             LOGGER.error(e.getMessage());
             throw new OllamaCommunicationException("Unable to connect to ollama server", e);
         }

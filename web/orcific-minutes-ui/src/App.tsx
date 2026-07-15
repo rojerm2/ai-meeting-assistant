@@ -1,43 +1,22 @@
-import Header from "./components/Header";
-import UploadForm from "./components/UploadForm";
-import MeetingNotesCard from "./components/MeetingNotesCard"; 
+import Header from './components/Header';
+import UploadForm from './components/UploadForm';
+import MeetingNotesCard from './components/MeetingNotesCard';
 
-import type { MeetingNotes } from "./models/MeetingNotes.ts";
-
-const sampleNotes: MeetingNotes = {
-
-    summary:
-        "The team agreed to migrate the backend to Spring Boot.",
-
-    keyDecisions: [
-        "Use Spring Boot",
-        "Use React"
-    ],
-
-    actionItems: [
-        "John will build the REST API",
-        "Alice will create the frontend"
-    ],
-
-    openQuestions: [
-        "Should we use SQLite?"
-    ]
-
-};
+import type { MeetingNotes } from './models/MeetingNotes';
+import { useState } from 'react';
 
 function App() {
+  const [notes, setNotes] = useState<MeetingNotes | null>(null);
 
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="mx-auto max-w-5xl px-6 py-12">
         <Header />
-
-        <UploadForm />
-        
-        <MeetingNotesCard notes={sampleNotes} />
+        <UploadForm onSuccess={setNotes} />
+        {notes && <MeetingNotesCard notes={notes} />}
       </div>
     </div>
-  )
-  }
+  );
+}
 
-export default App
+export default App;
