@@ -1,14 +1,21 @@
-import { useState, type ChangeEvent } from 'react';
-import type { MeetingNotes } from '../models/MeetingNotes';
-import { uploadTranscript } from '../services/meetingApi';
+import { useState, type ChangeEvent } from "react";
+import type { MeetingNotes } from "../models/MeetingNotes";
+import { uploadTranscript } from "../services/meetingApi";
 
 interface UploadFormProps {
+  loading: boolean;
+  onLoadingChange: (loading: boolean) => void;
   onSuccess: (notes: MeetingNotes) => void;
 }
 
-export default function UploadForm({ onSuccess }: UploadFormProps) {
+export default function UploadForm({
+  loading,
+  onLoadingChange,
+  onSuccess,
+}: UploadFormProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  // const [loading, setLoading] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
@@ -21,16 +28,30 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
     }
 
     try {
-      setLoading(true);
+      // setLoading(true);
+      onLoadingChange(true);
       const notes = await uploadTranscript(selectedFile);
       onSuccess(notes);
+    } catch (err) {
+      setError("Unable to generate meeting notes.");
     } finally {
-      setLoading(false);
+      // setLoading(false);
+      onLoadingChange(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-8">
+    <div className="bg-white rounded-xl shadow-md p-8 mb-1">
+      {error && (
+        <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+          {error}
+        </div>
+      )}
+
+      {selectedFile && (
+        <div className=" text-sm text-slate-600">📄 {selectedFile.name}</div>
+      )}
+
       <input
         type="file"
         accept=".txt"
@@ -44,15 +65,31 @@ export default function UploadForm({ onSuccess }: UploadFormProps) {
                    file:py-2
                    file:text-white
                    file:cursor-pointer
-                   hover:file:bg-blue-700"
+                   hover:file:bg-blue-700
+                   mb-1
+                   bg-slate-200
+                   p-1.5
+                   rounded-md
+                   mt-4
+                   cursor-pointer
+                  hover:bg-slate-300"
       />
 
       <button
         onClick={handleGenerate}
         disabled={loading || !selectedFile}
-        className="mt-6 w-full rounded-lg bg-blue-600 py-3 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+        className={`mt-1 
+          w-full rounded-lg bg-blue-600 py-3 
+          text-white transition hover:bg-blue-700 
+          cursor-pointer
+          ${loading || !selectedFile ? "disabled:cursor-not-allowed disabled:bg-blue-300" : "bg-blue-600 hover:bg-blue-700"}`}
+        // className={`
+        //     w-full rounded-lg py-3 font-semibold text-white transition
+
+        //     ${loading ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
+        //     `}
       >
-        {loading ? 'Generating...' : 'Generate Notes'}
+        {loading ? "Generating..." : "Generate Notes"}
       </button>
     </div>
   );
