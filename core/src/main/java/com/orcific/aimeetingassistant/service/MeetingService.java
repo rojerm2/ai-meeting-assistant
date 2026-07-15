@@ -34,6 +34,7 @@ public class MeetingService {
             return notes;
         }
         catch(JsonParseException | MismatchedInputException e){
+            LOGGER.error(e.getMessage());
             throw new InvalidAiResponseException("Error with parsing response", e);
         }
     }
