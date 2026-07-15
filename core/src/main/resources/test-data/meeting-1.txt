@@ -1,0 +1,16 @@
+Transcript:
+
+Alice: We should migrate the backend to Spring Boot.
+
+John: I'll create the REST API by Friday.
+
+Bob: We still need to decide whether to use PostgreSQL.
+
+Expected output:
+
+{
+  "summary": "",
+  "keyDecisions": ["Decide whether to use PostgreSQL"],
+  "actionItems": ["Alice will migrate the backend to Spring Boot", "John will create REST API by Friday",],
+  "openQuestions": []
+}
