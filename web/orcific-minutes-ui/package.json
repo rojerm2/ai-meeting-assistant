@@ -1,8 +1,28 @@
 {
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "eslint": "^10.7.0",
-    "prettier": "^3.9.5",
-    "typescript-eslint": "^8.64.0"
-  }
+    "name": "orcific-minutes-ui",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "lint": "eslint . --ext .ts,.tsx"
+    },
+    "dependencies": {
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@tailwindcss/vite": "^4.3.2",
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
+        "@vitejs/plugin-react": "^4.3.1",
+        "autoprefixer": "^10.4.19",
+        "eslint": "^10.7.0",
+        "postcss": "^8.4.37",
+        "prettier": "^3.9.5",
+        "tailwindcss": "^4.3.2"
+    }
 }

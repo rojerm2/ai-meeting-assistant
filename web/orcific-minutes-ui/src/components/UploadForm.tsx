@@ -1,22 +1,57 @@
 import { useState, type ChangeEvent } from 'react';
 import type { MeetingNotes } from '../models/MeetingNotes';
-import { uploadTranscript } from '../services/meetingApi';
+import { saveMeeting, uploadTranscript } from '../services/meetingApi';
+import ExportButtons from './ExportButtons';
 
 interface UploadFormProps {
     loading: boolean;
     onLoadingChange: (loading: boolean) => void;
     onSuccess: (notes: MeetingNotes) => void;
+    onFileSelected: (transcript: string) => void;
 }
 
-export default function UploadForm({ loading, onLoadingChange, onSuccess }: UploadFormProps) {
+export default function UploadForm({
+    loading,
+    onLoadingChange,
+    onSuccess,
+    onFileSelected,
+}: UploadFormProps): import('react').JSX.Element {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [error, setError] = useState('');
     const [model, setModel] = useState('qwen2.5:3b');
+    const [notes, setNotes] = useState<MeetingNotes | null>(null);
+    const [transcript, setTranscript] = useState('');
+    const [id, setId] = useState<number>();
     // const [loading, setLoading] = useState(false);
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
         setSelectedFile(file);
+        readFileContent(file);
+        // onFileSelected(file ? URL.createObjectURL(file) : null);
+        setNotes({
+            summary: 'Sample summary',
+            keyDecisions: ['Decision 1', 'Decision 2'],
+            actionItems: ['Action Item 1'],
+            openQuestions: ['Open Question 1'],
+            metadata: {
+                model: 'Sample Model',
+                durationMs: 1234,
+                generatedAt: new Date().toISOString(),
+            },
+        } as MeetingNotes);
+    };
+
+    const readFileContent = (file: File | null) => {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            onFileSelected(content);
+            setTranscript(content);
+        };
+        reader.readAsText(file);
     };
 
     const handleGenerate = async () => {
@@ -25,16 +60,25 @@ export default function UploadForm({ loading, onLoadingChange, onSuccess }: Uplo
         }
 
         try {
-            // setLoading(true);
             onLoadingChange(true);
             const notes = await uploadTranscript(selectedFile, model);
+            setNotes(notes);
             onSuccess(notes);
         } catch (err) {
             setError('Unable to generate meeting notes.');
         } finally {
-            // setLoading(false);
             onLoadingChange(false);
         }
+    };
+
+    const handleSaveMeeting = async () => {
+        const title = prompt('Meeting title:');
+
+        if (!title) return;
+
+        const id = await saveMeeting(title, transcript, notes as MeetingNotes);
+
+        alert(`Meeting saved! ID = ${id}`);
     };
 
     return (
@@ -79,16 +123,31 @@ export default function UploadForm({ loading, onLoadingChange, onSuccess }: Uplo
             >
                 {loading ? 'Generating...' : 'Generate Notes'}
             </button>
-            Select a model:
-            <select
-                className="p-2 mt-4 ml-2 border rounded-md border-slate-300"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-            >
-                <option value="qwen2.5:3b">Qwen 2.5 3B</option>
-                <option value="gemma3:4b">Gemma 3 4B</option>
-                <option value="phi3:mini">Phi-3 Mini</option>
-            </select>
+            {!notes && (
+                <div>
+                    Select a model:
+                    <select
+                        className="p-2 mt-4 ml-2 border rounded-md border-slate-300"
+                        value={model}
+                        onChange={(e) => setModel(e.target.value)}
+                    >
+                        <option value="qwen2.5:3b">Qwen 2.5 3B</option>
+                        <option value="gemma3:4b">Gemma 3 4B</option>
+                        <option value="phi3:mini">Phi-3 Mini</option>
+                    </select>
+                </div>
+            )}
+
+            {notes && (
+                <button
+                    onClick={handleSaveMeeting}
+                    className="rounded bg-green-600 px-4 py-2 text-white mt-4"
+                >
+                    Save Meeting
+                </button>
+            )}
+
+            <ExportButtons meetingNotes={notes as MeetingNotes} />
         </div>
     );
 }

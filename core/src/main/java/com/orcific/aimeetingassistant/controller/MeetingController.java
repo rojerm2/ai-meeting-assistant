@@ -1,23 +1,25 @@
 package com.orcific.aimeetingassistant.controller;
 
-import com.orcific.aimeetingassistant.dto.MeetingNotes;
-import com.orcific.aimeetingassistant.dto.MeetingRequest;
-import com.orcific.aimeetingassistant.dto.SaveMeetingRequest;
-import com.orcific.aimeetingassistant.dto.SaveMeetingResponse;
+import com.orcific.aimeetingassistant.dto.*;
 import com.orcific.aimeetingassistant.service.MeetingService;
+import com.orcific.aimeetingassistant.service.PdfService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/meeting")
 @AllArgsConstructor
 public class MeetingController {
     private final MeetingService meetingService;
+    private final PdfService pdfService;
 
     @PostMapping("/summarize")
     public MeetingNotes summarize(@RequestBody MeetingRequest meetingRequest) {
@@ -50,7 +52,25 @@ public class MeetingController {
         return new SaveMeetingResponse(id);
     }
 
+    @GetMapping("/meetings")
+    public List<MeetingHistoryResponse> getMeetings(){
+        return meetingService.getMeetings();
+    }
 
+    @GetMapping("/meetings/{id}")
+    public MeetingNotes getMeeting(@PathVariable Long id) {
+        return meetingService.getMeeting(id);
+    }
+
+    @GetMapping(value = "/meetings/{id}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> downloadPdf(@PathVariable Long id) {
+        MeetingNotes notes = meetingService.getMeeting(id);
+
+        byte[] pdf = pdfService.generateMeetingPdf(notes);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=meeting-notes.pdf")
+                .body(pdf);
+    }
 
     @GetMapping
     public String index() {

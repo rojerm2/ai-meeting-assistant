@@ -27,7 +27,7 @@ public class OllamaService {
         OllamaRequest request = new OllamaRequest(
                 model,
                 prompt,
-                true,
+                false,
                 new OllamaOptions(0.0)
         );
 

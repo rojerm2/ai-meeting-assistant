@@ -1,9 +1,6 @@
 package com.orcific.aimeetingassistant.service;
 
-import com.orcific.aimeetingassistant.dto.AiResponse;
-import com.orcific.aimeetingassistant.dto.GenerationMetadata;
-import com.orcific.aimeetingassistant.dto.MeetingNotes;
-import com.orcific.aimeetingassistant.dto.SaveMeetingRequest;
+import com.orcific.aimeetingassistant.dto.*;
 import com.orcific.aimeetingassistant.entity.MeetingEntity;
 import com.orcific.aimeetingassistant.exception.InvalidAiResponseException;
 import com.orcific.aimeetingassistant.mapper.MeetingMapper;
@@ -17,6 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -45,6 +43,22 @@ public class MeetingService {
         MeetingEntity saved = meetingRepository.save(entity);
 
         return saved.getId();
+    }
+
+    public List<MeetingHistoryResponse> getMeetings() {
+        return meetingRepository.findAll()
+                .stream()
+                .map(meetingMapper::toHistory)
+                .toList();
+    }
+
+    public MeetingNotes getMeeting(Long id) {
+
+        MeetingEntity entity = meetingRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Meeting not found"));
+
+        return meetingMapper.toMeetingNotes(entity);
     }
 
     private MeetingNotes parseResponseToMeetingNotes(String aiResponse) {

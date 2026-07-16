@@ -1,3 +1,4 @@
+import type { MeetingHistory } from '../models/MeetingHistory.js';
 import type { MeetingNotes } from '../models/MeetingNotes.ts';
 
 const API_BASE_URL = 'http://localhost:8080/api/meeting';
@@ -17,4 +18,50 @@ export async function uploadTranscript(file: File, model: string): Promise<Meeti
     }
 
     return (await response.json()) as MeetingNotes;
+}
+
+export async function saveMeeting(
+    title: string,
+    transcript: string,
+    meetingNotes: MeetingNotes,
+): Promise<number> {
+    const response = await fetch(`${API_BASE_URL}/meetings`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            title,
+            transcript,
+            meetingNotes,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to save meeting.');
+    }
+
+    const result = await response.json();
+
+    return result.id as number;
+}
+
+export async function getMeetingHistory(): Promise<MeetingHistory[]> {
+    const response = await fetch(`${API_BASE_URL}/meetings`);
+
+    if (!response.ok) {
+        throw new Error('Failed to load history.');
+    }
+
+    return await response.json();
+}
+
+export async function getMeeting(id: number): Promise<MeetingNotes> {
+    const response = await fetch(`${API_BASE_URL}/meetings/${id}`);
+
+    if (!response.ok) {
+        throw new Error('Meeting not found.');
+    }
+
+    return await response.json();
 }

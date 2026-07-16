@@ -1,5 +1,7 @@
 package com.orcific.aimeetingassistant.mapper;
 
+import com.orcific.aimeetingassistant.dto.GenerationMetadata;
+import com.orcific.aimeetingassistant.dto.MeetingHistoryResponse;
 import com.orcific.aimeetingassistant.dto.MeetingNotes;
 import com.orcific.aimeetingassistant.dto.SaveMeetingRequest;
 import com.orcific.aimeetingassistant.entity.MeetingEntity;
@@ -8,7 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -47,5 +52,37 @@ public class MeetingMapper {
         }
 
         return entity;
+    }
+
+    public MeetingHistoryResponse toHistory(MeetingEntity entity) {
+        return new MeetingHistoryResponse(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getModel(),
+                entity.getCreatedAt()
+        );
+    }
+
+    public MeetingNotes toMeetingNotes(MeetingEntity entity) {
+        try {
+            return new MeetingNotes(
+                    entity.getSummary(),
+                    objectMapper.readValue(
+                            entity.getKeyDecisions(),
+                            new TypeReference<List<String>>() {}),
+                    objectMapper.readValue(
+                            entity.getActionItems(),
+                            new TypeReference<List<String>>() {}),
+                    objectMapper.readValue(
+                            entity.getOpenQuestions(),
+                            new TypeReference<List<String>>() {}),
+                    new GenerationMetadata(
+                            entity.getModel(),
+                            entity.getDurationMs(),
+                            entity.getCreatedAt())
+            );
+        } catch (JacksonException e) {
+            throw new RuntimeException("Failed to deserialize meeting data", e);
+        }
     }
 }
