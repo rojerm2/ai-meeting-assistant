@@ -2,6 +2,8 @@ package com.orcific.aimeetingassistant.controller;
 
 import com.orcific.aimeetingassistant.dto.MeetingNotes;
 import com.orcific.aimeetingassistant.dto.MeetingRequest;
+import com.orcific.aimeetingassistant.dto.SaveMeetingRequest;
+import com.orcific.aimeetingassistant.dto.SaveMeetingResponse;
 import com.orcific.aimeetingassistant.service.MeetingService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -40,10 +42,14 @@ public class MeetingController {
         return meetingService.summarizeMeeting(transcript, model);
     }
 
-    @PostMapping(
-            value = "/stream",
-            produces = MediaType.TEXT_EVENT_STREAM_VALUE
-    )
+    @PostMapping("/meetings")
+    public SaveMeetingResponse saveMeeting(@RequestBody SaveMeetingRequest request) {
+
+        Long id = meetingService.saveMeeting(request);
+
+        return new SaveMeetingResponse(id);
+    }
+
 
 
     @GetMapping

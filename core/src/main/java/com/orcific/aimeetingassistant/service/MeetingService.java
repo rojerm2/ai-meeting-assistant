@@ -3,10 +3,12 @@ package com.orcific.aimeetingassistant.service;
 import com.orcific.aimeetingassistant.dto.AiResponse;
 import com.orcific.aimeetingassistant.dto.GenerationMetadata;
 import com.orcific.aimeetingassistant.dto.MeetingNotes;
+import com.orcific.aimeetingassistant.dto.SaveMeetingRequest;
+import com.orcific.aimeetingassistant.entity.MeetingEntity;
 import com.orcific.aimeetingassistant.exception.InvalidAiResponseException;
-import lombok.AllArgsConstructor;
+import com.orcific.aimeetingassistant.mapper.MeetingMapper;
+import com.orcific.aimeetingassistant.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldNameConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.json.JsonParseException;
@@ -23,6 +25,8 @@ public class MeetingService {
     private final ObjectMapper objectMapper;
     private final PromptService promptService;
     private static final Logger LOGGER = LoggerFactory.getLogger(MeetingService.class);
+    private final MeetingRepository meetingRepository;
+    private final MeetingMapper meetingMapper;
 
     private GenerationMetadata metadata;
 
@@ -34,6 +38,13 @@ public class MeetingService {
         String aiResponse = generateResponse(prompt, model);
         LOGGER.info("AI response before parsing: " + aiResponse);
         return parseResponseToMeetingNotes(aiResponse);
+    }
+
+    public long saveMeeting(SaveMeetingRequest request) {
+        MeetingEntity entity = meetingMapper.toEntity(request);
+        MeetingEntity saved = meetingRepository.save(entity);
+
+        return saved.getId();
     }
 
     private MeetingNotes parseResponseToMeetingNotes(String aiResponse) {
