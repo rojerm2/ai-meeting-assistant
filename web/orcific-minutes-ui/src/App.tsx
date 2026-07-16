@@ -1,41 +1,36 @@
-import Header from "./components/Header";
-import UploadForm from "./components/UploadForm";
-import MeetingNotesCard from "./components/MeetingNotesCard";
-import LoadingSpinner from "./components/LoadingSpinner";
-import EmptyState from "./components/EmptyState";
+import Header from './components/Header';
+import UploadForm from './components/UploadForm';
+import MeetingNotesCard from './components/MeetingNotesCard';
+import LoadingSpinner from './components/LoadingSpinner';
+import EmptyState from './components/EmptyState';
 
-import type { MeetingNotes } from "./models/MeetingNotes";
-import { useState } from "react";
+import type { MeetingNotes } from './models/MeetingNotes';
+import { useState } from 'react';
 
 function App() {
-  const [notes, setNotes] = useState<MeetingNotes | null>(null);
-  const [loading, setLoading] = useState(false);
+    const [notes, setNotes] = useState<MeetingNotes | null>(null);
+    const [loading, setLoading] = useState(false);
 
-  return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="mx-auto max-w-5xl px-6 py-6">
-        <Header />
+    return (
+        <div className="min-h-screen bg-slate-100">
+            <div className="max-w-5xl px-6 py-6 mx-auto">
+                <Header />
 
-        <UploadForm
-          loading={loading}
-          onLoadingChange={setLoading}
-          onSuccess={setNotes}
-        />
-        {!loading && notes && <MeetingNotesCard notes={notes} />}
-        {/* {notes && <MeetingNotesCard notes={notes} />} */}
-        {!loading && !notes && <EmptyState />}
+                {notes !== null && (
+                    <div className="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
+                        ✅ Meeting notes generated successfully.
+                    </div>
+                )}
+                <UploadForm loading={loading} onLoadingChange={setLoading} onSuccess={setNotes} />
 
-        {loading && <LoadingSpinner />}
-        {notes !== null && (
-          <div className="mb-6 rounded-lg bg-green-100 p-4 text-green-700">
-            ✅ Meeting notes generated successfully.
-          </div>
-        )}
-      </div>
-    </div>
-  );
+                {!loading && notes && <MeetingNotesCard notes={notes} />}
+                {/* {notes && <MeetingNotesCard notes={notes} />} */}
+                {!loading && !notes && <EmptyState />}
 
-  setError("Unable to generate meeting notes.");
+                {loading && <LoadingSpinner />}
+            </div>
+        </div>
+    );
 }
 
 export default App;

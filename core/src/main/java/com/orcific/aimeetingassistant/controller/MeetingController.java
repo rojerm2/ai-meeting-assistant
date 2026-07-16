@@ -20,11 +20,13 @@ public class MeetingController {
     @PostMapping("/summarize")
     public MeetingNotes summarize(@RequestBody MeetingRequest meetingRequest) {
 
-        return meetingService.summarizeMeeting(meetingRequest.transcript());
+        return meetingService.summarizeMeeting(meetingRequest.transcript(), meetingRequest.model());
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public MeetingNotes summarizeFromFile(@RequestParam("file") MultipartFile file) {
+    public MeetingNotes summarizeFromFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("model") String model) {
         if(file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }
@@ -35,8 +37,14 @@ public class MeetingController {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return meetingService.summarizeMeeting(transcript);
+        return meetingService.summarizeMeeting(transcript, model);
     }
+
+    @PostMapping(
+            value = "/stream",
+            produces = MediaType.TEXT_EVENT_STREAM_VALUE
+    )
+
 
     @GetMapping
     public String index() {

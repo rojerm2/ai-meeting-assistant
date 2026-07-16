@@ -1,8 +1,12 @@
 package com.orcific.aimeetingassistant.service;
 
+import com.orcific.aimeetingassistant.dto.AiResponse;
+import com.orcific.aimeetingassistant.dto.GenerationMetadata;
 import com.orcific.aimeetingassistant.dto.MeetingNotes;
 import com.orcific.aimeetingassistant.exception.InvalidAiResponseException;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.json.JsonParseException;
@@ -10,7 +14,9 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 
-@AllArgsConstructor
+import java.time.LocalDateTime;
+
+@RequiredArgsConstructor
 @Service
 public class MeetingService {
     private final OllamaService  ollamaService;
@@ -18,12 +24,14 @@ public class MeetingService {
     private final PromptService promptService;
     private static final Logger LOGGER = LoggerFactory.getLogger(MeetingService.class);
 
-    public MeetingNotes summarizeMeeting(String transcript) {
+    private GenerationMetadata metadata;
+
+    public MeetingNotes summarizeMeeting(String transcript, String model) {
         String prompt = buildPrompt(transcript);
 
         LOGGER.info("Prompt message: " + prompt);
 
-        String aiResponse = generateResponse(prompt);
+        String aiResponse = generateResponse(prompt, model);
         LOGGER.info("AI response before parsing: " + aiResponse);
         return parseResponseToMeetingNotes(aiResponse);
     }
@@ -31,9 +39,16 @@ public class MeetingService {
     private MeetingNotes parseResponseToMeetingNotes(String aiResponse) {
         LOGGER.info("Parsing AI response into MeetingNotes.");
         try{
-            MeetingNotes notes = objectMapper.readValue(aiResponse, MeetingNotes.class);
+            AiResponse aiResponseDto = objectMapper.readValue(aiResponse, AiResponse.class);
+
             LOGGER.info("AI response successfully parsed into MeetingNotes.");
-            return notes;
+            return new MeetingNotes(
+                    aiResponseDto.summary(),
+                    aiResponseDto.decisions(),
+                    aiResponseDto.actionItems(),
+                    aiResponseDto.openQuestions(),
+                    metadata
+            );
         }
         catch(JsonParseException | MismatchedInputException e){
             LOGGER.error(e.getMessage());
@@ -41,15 +56,22 @@ public class MeetingService {
         }
     }
 
-    private String generateResponse(String prompt) {
+    private String generateResponse(String prompt, String model) {
         long startTime = System.currentTimeMillis();
         LOGGER.info("Sending transcript to ollama...");
 
-        String aiResponse = ollamaService.generate(prompt);
+        String aiResponse = ollamaService.generate(prompt, model);
         LOGGER.info("Received response from ollama.");
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         LOGGER.info("Ollama finished in {} ms", elapsedTime);
+
+        metadata = new GenerationMetadata(
+                model,
+                elapsedTime,
+                LocalDateTime.now()
+        );
+
         return aiResponse;
     }
 

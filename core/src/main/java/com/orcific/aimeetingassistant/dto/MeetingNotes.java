@@ -6,6 +6,7 @@ public record MeetingNotes(
         String summary,
         List<String> decisions,
         List<String> actionItems,
-        List<String> openQuestions
+        List<String> openQuestions,
+        GenerationMetadata metadata
 ) {
 }

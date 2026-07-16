@@ -22,12 +22,12 @@ public class OllamaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OllamaService.class);
     private final RestClient restClient;
 
-    public String generate(String prompt){
+    public String generate(String prompt, String model){
 
         OllamaRequest request = new OllamaRequest(
-                "qwen2.5:3b",
+                model,
                 prompt,
-                false,
+                true,
                 new OllamaOptions(0.0)
         );
 
