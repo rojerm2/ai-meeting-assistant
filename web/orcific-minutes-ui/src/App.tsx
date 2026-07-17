@@ -4,6 +4,7 @@ import MeetingNotesCard from './components/MeetingNotesCard';
 import LoadingSpinner from './components/LoadingSpinner';
 import EmptyState from './components/EmptyState';
 import HistorySidebar from './components/HistorySidebar';
+import RagAssistantPanel from './components/RagAssistantPanel';
 import NotificationToast from './components/NotificationToast';
 
 import type { MeetingNotes } from './models/MeetingNotes';
@@ -80,20 +81,16 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.15),_transparent_40%),linear-gradient(135deg,_#f8fafc_0%,_#f1f5f9_100%)]">
             <NotificationToast notifications={notifications} onDismiss={dismissNotification} />
-            <div className="max-w-6xl px-6 py-6 mx-auto">
+            <div className="mx-auto flex max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
                 <Header />
 
-                <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
-                    <aside className="rounded-4xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <HistorySidebar meetings={history} onOpen={openMeeting} />
-                    </aside>
-
+                <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
                     <main className="space-y-6">
                         {notes !== null && transcript == null && (
-                            <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-green-700">
-                                ✅ Meeting notes generated successfully.
+                            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm">
+                                Meeting notes generated successfully.
                             </div>
                         )}
 
@@ -118,6 +115,16 @@ function App() {
 
                         {loading && <LoadingSpinner />}
                     </main>
+
+                    <aside className="lg:sticky lg:top-6 lg:self-start">
+                        <div className="space-y-4">
+                            <HistorySidebar meetings={history} onOpen={openMeeting} />
+                            <RagAssistantPanel
+                                isEnabled={id != null || history.length > 0}
+                                onNotify={showNotification}
+                            />
+                        </div>
+                    </aside>
                 </div>
             </div>
         </div>

@@ -16,6 +16,12 @@ interface Props {
     compact?: boolean;
 }
 
+const modelOptions = [
+    { value: 'qwen2.5:3b', label: 'Qwen 2.5 3B' },
+    { value: 'gemma3:4b', label: 'Gemma 3 4B' },
+    { value: 'phi3:mini', label: 'Phi-3 Mini' },
+];
+
 export default function RagAssistantPanel({ isEnabled, onNotify, compact = false }: Props) {
     const [question, setQuestion] = useState('');
     const [model, setModel] = useState('qwen2.5:3b');
@@ -75,24 +81,16 @@ export default function RagAssistantPanel({ isEnabled, onNotify, compact = false
     };
 
     const panelClassName = compact
-        ? 'w-full overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm'
-        : 'w-full overflow-hidden rounded-4xl border border-slate-200 bg-white p-6 shadow-sm';
+        ? 'w-full overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm'
+        : 'w-full overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm';
 
     return (
         <section className={panelClassName}>
-            <div
-                className={`mb-3 flex items-start justify-between gap-3 ${compact ? 'mb-3' : 'mb-4'}`}
-            >
+            <div className="mb-4 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <h3
-                        className={`font-semibold text-slate-900 ${compact ? 'text-base' : 'text-lg'}`}
-                    >
-                        Meeting Q&A
-                    </h3>
-                    <p className={`text-slate-500 ${compact ? 'text-xs' : 'text-sm'}`}>
-                        {compact
-                            ? 'Ask about saved meetings and review the evidence.'
-                            : 'Ask questions about your saved meetings and review the supporting evidence.'}
+                    <h3 className="text-lg font-semibold text-slate-900">Messaging</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                        Ask questions about saved meetings and review the evidence.
                     </p>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
@@ -100,16 +98,14 @@ export default function RagAssistantPanel({ isEnabled, onNotify, compact = false
                 </span>
             </div>
 
-            <div
-                className={`mb-3 space-y-3 rounded-3xl border border-slate-200 bg-slate-50 p-3 ${compact ? 'max-h-64 overflow-y-auto' : 'max-h-96 overflow-y-auto'}`}
-            >
+            <div className="mb-4 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 max-h-80 overflow-y-auto">
                 {messages.map((message) => (
                     <div
                         key={message.id}
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`w-full max-w-[90%] rounded-2xl px-3 py-2.5 text-sm shadow-sm overflow-wrap-anywhere ${message.role === 'user' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700'}`}
+                            className={`w-full max-w-[92%] rounded-2xl px-3 py-2.5 text-sm shadow-sm overflow-wrap-anywhere ${message.role === 'user' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700'}`}
                         >
                             <p className="whitespace-pre-wrap">{message.content}</p>
 
@@ -159,8 +155,8 @@ export default function RagAssistantPanel({ isEnabled, onNotify, compact = false
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-2">
-                <div className="flex flex-col gap-2 md:flex-row">
+            <form onSubmit={handleSubmit} className="space-y-3">
+                <div className="flex flex-col gap-2">
                     <input
                         type="text"
                         value={question}
@@ -169,25 +165,29 @@ export default function RagAssistantPanel({ isEnabled, onNotify, compact = false
                         disabled={!isEnabled}
                         className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100"
                     />
-                    <input
-                        type="text"
-                        value={model}
-                        onChange={(event) => setModel(event.target.value)}
-                        placeholder="Model"
-                        disabled={!isEnabled}
-                        className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 md:w-36"
-                    />
-                </div>
 
-                <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs text-slate-500">Example: “What did Sarah create?”</p>
-                    <button
-                        type="submit"
-                        disabled={isLoading || !isEnabled}
-                        className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-                    >
-                        {isLoading ? 'Sending…' : 'Ask'}
-                    </button>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <select
+                            value={model}
+                            onChange={(event) => setModel(event.target.value)}
+                            disabled={!isEnabled}
+                            className="w-full rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 sm:w-40"
+                        >
+                            {modelOptions.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+
+                        <button
+                            type="submit"
+                            disabled={isLoading || !isEnabled}
+                            className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                        >
+                            {isLoading ? 'Sending…' : 'Ask'}
+                        </button>
+                    </div>
                 </div>
             </form>
         </section>

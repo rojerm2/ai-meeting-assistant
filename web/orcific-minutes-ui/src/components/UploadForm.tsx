@@ -102,72 +102,80 @@ export default function UploadForm({
     };
 
     return (
-        <div className="p-8 mb-1 bg-white shadow-md rounded-xl">
-            {error && <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">{error}</div>}
-            {selectedFile && <div className="text-sm text-slate-600">📄 {selectedFile.name}</div>}
-            <input
-                type="file"
-                accept=".txt"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-slate-700
-                   file:mr-4
-                   file:rounded-md
-                   file:border-0
-                   file:bg-blue-600
-                   file:px-4
-                   file:py-2
-                   file:text-white
-                   file:cursor-pointer
-                   hover:file:bg-blue-700
-                   mb-1
-                   bg-slate-200
-                   p-1.5
-                   rounded-md
-                   mt-4
-                   cursor-pointer
-                  hover:bg-slate-300"
-            />
-            <button
-                onClick={handleGenerate}
-                disabled={loading || !selectedFile}
-                className={`mt-1 
-          w-full rounded-lg bg-blue-600 py-3 
-          text-white transition hover:bg-blue-700 
-          cursor-pointer
-          ${loading || !selectedFile ? 'disabled:cursor-not-allowed disabled:bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'}`}
-                // className={`
-                //     w-full rounded-lg py-3 font-semibold text-white transition
-
-                //     ${loading ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
-                //     `}
-            >
-                {loading ? 'Generating...' : 'Generate Notes'}
-            </button>
-            {!notes && (
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    Select a model:
-                    <select
-                        className="p-2 mt-4 ml-2 border rounded-md border-slate-300"
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                    >
-                        <option value="qwen2.5:3b">Qwen 2.5 3B</option>
-                        <option value="gemma3:4b">Gemma 3 4B</option>
-                        <option value="phi3:mini">Phi-3 Mini</option>
-                    </select>
+                    <h2 className="text-xl font-semibold text-slate-900">Generate meeting notes</h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                        Upload a transcript, choose a model, and turn it into a polished summary.
+                    </p>
                 </div>
-            )}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600">
+                    Step 1 · Upload
+                </div>
+            </div>
 
-            {notes && (
+            <div className="mt-6 space-y-4">
+                {error && (
+                    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {error}
+                    </div>
+                )}
+
+                <label className="block">
+                    <span className="mb-2 block text-sm font-medium text-slate-700">
+                        Transcript file
+                    </span>
+                    <input
+                        type="file"
+                        accept=".txt"
+                        onChange={handleFileChange}
+                        className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700 file:mr-4 file:rounded-full file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-white file:cursor-pointer hover:file:bg-slate-700"
+                    />
+                    {selectedFile && (
+                        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                            📄 {selectedFile.name}
+                        </div>
+                    )}
+                </label>
+
+                {!notes && (
+                    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-slate-800">Model</p>
+                            <p className="text-sm text-slate-500">
+                                Choose the local model for generation.
+                            </p>
+                        </div>
+                        <select
+                            className="rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-400"
+                            value={model}
+                            onChange={(e) => setModel(e.target.value)}
+                        >
+                            <option value="qwen2.5:3b">Qwen 2.5 3B</option>
+                            <option value="gemma3:4b">Gemma 3 4B</option>
+                            <option value="phi3:mini">Phi-3 Mini</option>
+                        </select>
+                    </div>
+                )}
+
                 <button
-                    onClick={handleSaveMeeting}
-                    className="rounded bg-green-600 px-4 py-2 text-white mt-4"
+                    onClick={handleGenerate}
+                    disabled={loading || !selectedFile}
+                    className={`w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400 ${loading ? 'animate-pulse' : ''}`}
                 >
-                    Save Meeting
+                    {loading ? 'Generating...' : 'Generate Notes'}
                 </button>
-            )}
 
-            {/* <ExportButtons meetingNotes={notes as MeetingNotes} /> */}
-        </div>
+                {notes && (
+                    <button
+                        onClick={handleSaveMeeting}
+                        className="w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                    >
+                        Save Meeting
+                    </button>
+                )}
+            </div>
+        </section>
     );
 }

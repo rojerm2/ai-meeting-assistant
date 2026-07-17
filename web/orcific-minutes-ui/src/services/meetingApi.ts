@@ -69,7 +69,7 @@ export async function getMeeting(id: number): Promise<MeetingNotes> {
 }
 
 export async function askMeetingRag(question: string, model: string): Promise<RagResponse> {
-    const response = await fetch(`${API_BASE_URL}/rag/query`, {
+    const response = await fetch(`${API_BASE_URL}/rag/ask`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
