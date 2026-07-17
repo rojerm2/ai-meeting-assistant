@@ -6,7 +6,6 @@
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-green)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)
-![Tailwind CSS](https://shields.io)
 ![SQLite](https://img.shields.io/badge/SQLite-3-lightgrey)
 ![Ollama](https://img.shields.io/badge/Ollama-Local_AI-black)
 
