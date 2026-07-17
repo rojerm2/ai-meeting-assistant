@@ -10,7 +10,7 @@ export default function HistorySidebar({ meetings, onOpen }: Props) {
         <div aria-label="Meeting history sidebar">
             <div className="mb-6 flex items-center justify-between">
                 <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Meeting History</h2>
+                    <p className="text-lg font-semibold text-slate-900">Meeting History</p>
                     <p className="text-sm text-slate-500">Saved meetings from previous sessions</p>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">

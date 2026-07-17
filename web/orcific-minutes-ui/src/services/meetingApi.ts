@@ -1,5 +1,7 @@
 import type { MeetingHistory } from '../models/MeetingHistory.js';
 import type { MeetingNotes } from '../models/MeetingNotes.ts';
+import type { RagResponse } from '../models/RagResponse.js';
+import type { RagSource } from '../models/RagSource.js';
 
 const API_BASE_URL = 'http://localhost:8080/api/meeting';
 
@@ -61,6 +63,22 @@ export async function getMeeting(id: number): Promise<MeetingNotes> {
 
     if (!response.ok) {
         throw new Error('Meeting not found.');
+    }
+
+    return await response.json();
+}
+
+export async function askMeetingRag(question: string, model: string): Promise<RagResponse> {
+    const response = await fetch(`${API_BASE_URL}/rag/query`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question, model }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to query RAG backend.');
     }
 
     return await response.json();

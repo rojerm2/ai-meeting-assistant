@@ -103,6 +103,7 @@ function App() {
                             onSuccess={setNotes}
                             onFileSelected={setTranscript}
                             onNotify={showNotification}
+                            onMeetingSaved={setId}
                         />
 
                         {!loading && notes && (

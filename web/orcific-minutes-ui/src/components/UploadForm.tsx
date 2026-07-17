@@ -10,6 +10,7 @@ interface UploadFormProps {
     onSuccess: (notes: MeetingNotes) => void;
     onFileSelected: (transcript: string) => void;
     onNotify: (type: NotificationType, title: string, message?: string) => void;
+    onMeetingSaved?: (meetingId: number) => void;
 }
 
 export default function UploadForm({
@@ -18,6 +19,7 @@ export default function UploadForm({
     onSuccess,
     onFileSelected,
     onNotify,
+    onMeetingSaved,
 }: UploadFormProps): import('react').JSX.Element {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [error, setError] = useState('');
@@ -92,6 +94,7 @@ export default function UploadForm({
 
         try {
             const id = await saveMeeting(title, transcript, notes as MeetingNotes);
+            onMeetingSaved?.(id);
             onNotify('success', 'Meeting saved', `Meeting saved. ID = ${id}`);
         } catch (err) {
             onNotify('error', 'Save failed', 'Unable to save meeting. Please try again.');
