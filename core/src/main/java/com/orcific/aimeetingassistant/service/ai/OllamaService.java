@@ -1,9 +1,8 @@
-package com.orcific.aimeetingassistant.service;
+package com.orcific.aimeetingassistant.service.ai;
 
-import com.orcific.aimeetingassistant.dto.ApiError;
-import com.orcific.aimeetingassistant.dto.OllamaOptions;
-import com.orcific.aimeetingassistant.dto.OllamaRequest;
-import com.orcific.aimeetingassistant.dto.OllamaResponse;
+import com.orcific.aimeetingassistant.dto.ai.OllamaOptions;
+import com.orcific.aimeetingassistant.dto.ai.OllamaRequest;
+import com.orcific.aimeetingassistant.dto.ai.OllamaResponse;
 import com.orcific.aimeetingassistant.exception.OllamaCommunicationException;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -13,24 +12,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-
 @AllArgsConstructor
 @Service
 public class OllamaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OllamaService.class);
     private final RestClient restClient;
 
-    public String generate(String prompt, String model){
-
+    public String generateMeetingNotes(String prompt, String model, double temperature){
         OllamaRequest request = new OllamaRequest(
                 model,
                 prompt,
                 false,
-                new OllamaOptions(0.0)
+                new OllamaOptions(temperature)
         );
 
+        return generateAiResponse(request);
+    }
+
+    public String generateAiResponse(OllamaRequest request){
         try {
             OllamaResponse response = sendHttpPostRequest(request);
 
@@ -52,6 +51,7 @@ public class OllamaService {
                 .body(OllamaResponse.class);
 
         LOGGER.info("Retrieved response from Ollama server.");
+        LOGGER.info("Response: \n" + response.response());
         return response;
     }
 }

@@ -1,8 +1,14 @@
 package com.orcific.aimeetingassistant.controller;
 
 import com.orcific.aimeetingassistant.dto.*;
+import com.orcific.aimeetingassistant.dto.ai.RagAnswerResponse;
+import com.orcific.aimeetingassistant.dto.ai.RagQuestionRequest;
+import com.orcific.aimeetingassistant.dto.ai.embedding.SearchResult;
 import com.orcific.aimeetingassistant.service.MeetingService;
 import com.orcific.aimeetingassistant.service.PdfService;
+import com.orcific.aimeetingassistant.service.ai.EmbeddingService;
+import com.orcific.aimeetingassistant.service.ai.RagService;
+import com.orcific.aimeetingassistant.service.ai.RetrievalService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,6 +26,9 @@ import java.util.List;
 public class MeetingController {
     private final MeetingService meetingService;
     private final PdfService pdfService;
+    private final EmbeddingService embeddingService;
+    private final RetrievalService retrievalService;
+    private final RagService ragService;
 
     @PostMapping("/summarize")
     public MeetingNotes summarize(@RequestBody MeetingRequest meetingRequest) {
@@ -70,6 +79,21 @@ public class MeetingController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=meeting-notes.pdf")
                 .body(pdf);
+    }
+
+    @PostMapping("/rag/ask")
+    public RagAnswerResponse askMeeting(@RequestBody RagQuestionRequest request) {
+        return ragService.ask(request);
+    }
+
+    @GetMapping("/embedding-test")
+    public List<Double> testEmbed(@RequestParam String text){
+        return embeddingService.embed(text);
+    }
+
+    @GetMapping("/search")
+    public List<SearchResult> search(@RequestParam String text){
+        return retrievalService.retrieveTop3Embeddings(text, 3);
     }
 
     @GetMapping

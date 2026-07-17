@@ -35,7 +35,7 @@ public class MeetingMapper {
         entity.setCreatedAt(notes.metadata().generatedAt());
 
         try {
-            entity.setKeyDecisions(
+            entity.setDecisions(
                     objectMapper.writeValueAsString(notes.decisions())
             );
 
@@ -68,7 +68,7 @@ public class MeetingMapper {
             return new MeetingNotes(
                     entity.getSummary(),
                     objectMapper.readValue(
-                            entity.getKeyDecisions(),
+                            entity.getDecisions(),
                             new TypeReference<List<String>>() {}),
                     objectMapper.readValue(
                             entity.getActionItems(),

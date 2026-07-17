@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -25,7 +27,7 @@ public class MeetingEntity {
 
     @Lob
     @Column(columnDefinition = "TEXT")
-    private String keyDecisions;
+    private String decisions;
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -42,4 +44,11 @@ public class MeetingEntity {
     private Long durationMs;
 
     private LocalDateTime createdAt;
+
+    @OneToMany(
+            mappedBy = "meeting",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<MeetingChunkEntity> chunks = new ArrayList<>();
 }

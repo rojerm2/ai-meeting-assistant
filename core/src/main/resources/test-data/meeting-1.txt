@@ -10,7 +10,7 @@ Expected output:
 
 {
   "summary": "",
-  "keyDecisions": ["Decide whether to use PostgreSQL"],
+  "decisions": ["Decide whether to use PostgreSQL"],
   "actionItems": ["Alice will migrate the backend to Spring Boot", "John will create REST API by Friday",],
   "openQuestions": []
 }

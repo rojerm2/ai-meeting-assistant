@@ -8,7 +8,7 @@ Use exactly this schema:
 
 {
   "summary": "",
-  "keyDecisions": [],  //array of Strings
+  "decisions": [],  //array of Strings
   "actionItems": [],    //array of Strings
   "openQuestions": []   //array of Strings
 }

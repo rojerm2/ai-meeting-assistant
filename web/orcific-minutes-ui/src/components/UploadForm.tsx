@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import type { MeetingNotes } from '../models/MeetingNotes';
+import type { NotificationType } from '../types/notifications';
 import { saveMeeting, uploadTranscript } from '../services/meetingApi';
 import ExportButtons from './ExportButtons';
 
@@ -8,6 +9,7 @@ interface UploadFormProps {
     onLoadingChange: (loading: boolean) => void;
     onSuccess: (notes: MeetingNotes) => void;
     onFileSelected: (transcript: string) => void;
+    onNotify: (type: NotificationType, title: string, message?: string) => void;
 }
 
 export default function UploadForm({
@@ -15,6 +17,7 @@ export default function UploadForm({
     onLoadingChange,
     onSuccess,
     onFileSelected,
+    onNotify,
 }: UploadFormProps): import('react').JSX.Element {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [error, setError] = useState('');
@@ -29,17 +32,17 @@ export default function UploadForm({
         setSelectedFile(file);
         readFileContent(file);
         // onFileSelected(file ? URL.createObjectURL(file) : null);
-        setNotes({
-            summary: 'Sample summary',
-            keyDecisions: ['Decision 1', 'Decision 2'],
-            actionItems: ['Action Item 1'],
-            openQuestions: ['Open Question 1'],
-            metadata: {
-                model: 'Sample Model',
-                durationMs: 1234,
-                generatedAt: new Date().toISOString(),
-            },
-        } as MeetingNotes);
+        // setNotes({
+        //     summary: 'Sample summary',
+        //     keyDecisions: ['Decision 1', 'Decision 2'],
+        //     actionItems: ['Action Item 1'],
+        //     openQuestions: ['Open Question 1'],
+        //     metadata: {
+        //         model: 'Sample Model',
+        //         durationMs: 1234,
+        //         generatedAt: new Date().toISOString(),
+        //     },
+        // } as MeetingNotes);
     };
 
     const readFileContent = (file: File | null) => {
@@ -56,6 +59,11 @@ export default function UploadForm({
 
     const handleGenerate = async () => {
         if (!selectedFile) {
+            onNotify(
+                'info',
+                'No transcript selected',
+                'Please choose a transcript file before generating notes.',
+            );
             return;
         }
 
@@ -64,8 +72,14 @@ export default function UploadForm({
             const notes = await uploadTranscript(selectedFile, model);
             setNotes(notes);
             onSuccess(notes);
+            onNotify('success', 'Notes generated', 'Meeting notes were generated successfully.');
         } catch (err) {
             setError('Unable to generate meeting notes.');
+            onNotify(
+                'error',
+                'Generation failed',
+                'Unable to generate meeting notes. Please try again.',
+            );
         } finally {
             onLoadingChange(false);
         }
@@ -76,9 +90,12 @@ export default function UploadForm({
 
         if (!title) return;
 
-        const id = await saveMeeting(title, transcript, notes as MeetingNotes);
-
-        alert(`Meeting saved! ID = ${id}`);
+        try {
+            const id = await saveMeeting(title, transcript, notes as MeetingNotes);
+            onNotify('success', 'Meeting saved', `Meeting saved. ID = ${id}`);
+        } catch (err) {
+            onNotify('error', 'Save failed', 'Unable to save meeting. Please try again.');
+        }
     };
 
     return (
@@ -147,7 +164,7 @@ export default function UploadForm({
                 </button>
             )}
 
-            <ExportButtons meetingNotes={notes as MeetingNotes} />
+            {/* <ExportButtons meetingNotes={notes as MeetingNotes} /> */}
         </div>
     );
 }

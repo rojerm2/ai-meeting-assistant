@@ -3,12 +3,14 @@ import UploadForm from './components/UploadForm';
 import MeetingNotesCard from './components/MeetingNotesCard';
 import LoadingSpinner from './components/LoadingSpinner';
 import EmptyState from './components/EmptyState';
+import HistorySidebar from './components/HistorySidebar';
+import NotificationToast from './components/NotificationToast';
 
 import type { MeetingNotes } from './models/MeetingNotes';
+import type { MeetingHistory } from './models/MeetingHistory';
 import { useEffect, useState } from 'react';
 import { getMeeting, getMeetingHistory } from './services/meetingApi';
-import type { MeetingHistory } from './models/MeetingHistory';
-import HistorySidebar from './components/HistorySidebar';
+import type { Notification, NotificationType } from './types/notifications';
 
 function App() {
     const [notes, setNotes] = useState<MeetingNotes | null>(null);
@@ -16,33 +18,54 @@ function App() {
     const [transcript, setTranscript] = useState('');
     const [history, setHistory] = useState<MeetingHistory[]>([]);
     const [id, setId] = useState<number>();
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     useEffect(() => {
-        loadHistory();
+        void loadHistory();
     }, []);
 
     const loadHistory = async () => {
         const meetingHistory = await getMeetingHistory();
-
         setHistory(meetingHistory);
     };
 
-    const openMeeting = async (id: number) => {
-        const notes = await getMeeting(id);
-        setId(id);
+    const openMeeting = async (meetingId: number) => {
+        const notes = await getMeeting(meetingId);
+        setId(meetingId);
         setNotes(notes);
+    };
+
+    const showNotification = (type: NotificationType, title: string, message?: string) => {
+        const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        setNotifications((current) => [...current, { id, type, title, message }]);
+
+        window.setTimeout(() => {
+            setNotifications((current) => current.filter((notification) => notification.id !== id));
+        }, 4500);
+    };
+
+    const dismissNotification = (id: string) => {
+        setNotifications((current) => current.filter((notification) => notification.id !== id));
     };
 
     const downloadPdf = async () => {
         if (id == null) {
-            alert('Please open a saved meeting before downloading the PDF.');
+            showNotification(
+                'info',
+                'Before downloading',
+                'Please save the meeting summary before downloading the PDF.',
+            );
             return;
         }
 
         const response = await fetch(`http://localhost:8080/api/meeting/meetings/${id}/pdf`);
 
         if (!response.ok) {
-            alert('Failed to download the PDF. Please try again.');
+            showNotification(
+                'error',
+                'Download failed',
+                'Failed to download the PDF. Please try again.',
+            );
             return;
         }
 
@@ -53,32 +76,48 @@ function App() {
         a.download = 'meeting-notes.pdf';
         a.click();
         URL.revokeObjectURL(url);
+        showNotification('success', 'PDF downloaded', 'Your meeting notes PDF is ready.');
     };
 
     return (
         <div className="min-h-screen bg-slate-100">
-            <div className="max-w-5xl px-6 py-6 mx-auto">
+            <NotificationToast notifications={notifications} onDismiss={dismissNotification} />
+            <div className="max-w-6xl px-6 py-6 mx-auto">
                 <Header />
-                <HistorySidebar meetings={history} onOpen={openMeeting} />
 
-                {notes !== null && (
-                    <div className="p-4 mb-6 text-green-700 bg-green-100 rounded-lg">
-                        ✅ Meeting notes generated successfully.
-                    </div>
-                )}
-                <UploadForm
-                    loading={loading}
-                    onLoadingChange={setLoading}
-                    onSuccess={setNotes}
-                    onFileSelected={setTranscript}
-                />
+                <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
+                    <aside className="rounded-4xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <HistorySidebar meetings={history} onOpen={openMeeting} />
+                    </aside>
 
-                {!loading && notes && (
-                    <MeetingNotesCard notes={notes} onDownloadPdf={downloadPdf} />
-                )}
-                {!loading && !notes && <EmptyState />}
+                    <main className="space-y-6">
+                        {notes !== null && transcript == null && (
+                            <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-green-700">
+                                ✅ Meeting notes generated successfully.
+                            </div>
+                        )}
 
-                {loading && <LoadingSpinner />}
+                        <UploadForm
+                            loading={loading}
+                            onLoadingChange={setLoading}
+                            onSuccess={setNotes}
+                            onFileSelected={setTranscript}
+                            onNotify={showNotification}
+                        />
+
+                        {!loading && notes && (
+                            <MeetingNotesCard
+                                notes={notes}
+                                onDownloadPdf={downloadPdf}
+                                onNotify={showNotification}
+                            />
+                        )}
+
+                        {!loading && !notes && <EmptyState />}
+
+                        {loading && <LoadingSpinner />}
+                    </main>
+                </div>
             </div>
         </div>
     );

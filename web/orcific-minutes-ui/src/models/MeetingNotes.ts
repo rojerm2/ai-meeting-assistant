@@ -1,6 +1,6 @@
 export interface MeetingNotes {
     summary: string;
-    keyDecisions: string[];
+    decisions: string[];
     actionItems: string[];
     openQuestions: string[];
     metadata: GenerationMetadata;

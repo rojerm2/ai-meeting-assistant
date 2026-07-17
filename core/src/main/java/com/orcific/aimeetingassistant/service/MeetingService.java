@@ -1,10 +1,16 @@
 package com.orcific.aimeetingassistant.service;
 
 import com.orcific.aimeetingassistant.dto.*;
+import com.orcific.aimeetingassistant.entity.MeetingChunkEntity;
 import com.orcific.aimeetingassistant.entity.MeetingEntity;
 import com.orcific.aimeetingassistant.exception.InvalidAiResponseException;
 import com.orcific.aimeetingassistant.mapper.MeetingMapper;
+import com.orcific.aimeetingassistant.repository.MeetingChunkRepository;
 import com.orcific.aimeetingassistant.repository.MeetingRepository;
+import com.orcific.aimeetingassistant.service.ai.ChunkingService;
+import com.orcific.aimeetingassistant.service.ai.EmbeddingService;
+import com.orcific.aimeetingassistant.service.ai.OllamaService;
+import com.orcific.aimeetingassistant.service.ai.PromptService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +25,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class MeetingService {
-    private final OllamaService  ollamaService;
+    private final OllamaService ollamaService;
     private final ObjectMapper objectMapper;
     private final PromptService promptService;
     private static final Logger LOGGER = LoggerFactory.getLogger(MeetingService.class);
     private final MeetingRepository meetingRepository;
     private final MeetingMapper meetingMapper;
+    private final ChunkingService chunkingService;
+    private final EmbeddingService embeddingService;
+    private final MeetingChunkRepository meetingChunkRepository;
 
     private GenerationMetadata metadata;
 
@@ -40,9 +49,25 @@ public class MeetingService {
 
     public long saveMeeting(SaveMeetingRequest request) {
         MeetingEntity entity = meetingMapper.toEntity(request);
-        MeetingEntity saved = meetingRepository.save(entity);
+        MeetingEntity savedMeeting = meetingRepository.save(entity);
 
-        return saved.getId();
+        List<String> chunks = chunkingService.chunk(request.transcript());
+
+        for (int i = 0; i < chunks.size(); i++) {
+            String chunk = chunks.get(i);
+            List<Double> vector = embeddingService.embed(chunk);
+
+            MeetingChunkEntity chunkEntity = new MeetingChunkEntity();
+
+            chunkEntity.setMeeting(savedMeeting);
+            chunkEntity.setChunkIndex(i);
+            chunkEntity.setContent(chunk);
+            chunkEntity.setEmbedding(objectMapper.writeValueAsString(vector));
+
+            meetingChunkRepository.save(chunkEntity);
+        }
+
+        return savedMeeting.getId();
     }
 
     public List<MeetingHistoryResponse> getMeetings() {
@@ -85,7 +110,7 @@ public class MeetingService {
         long startTime = System.currentTimeMillis();
         LOGGER.info("Sending transcript to ollama...");
 
-        String aiResponse = ollamaService.generate(prompt, model);
+        String aiResponse = ollamaService.generateMeetingNotes(prompt, model, 0.0);
         LOGGER.info("Received response from ollama.");
 
         long elapsedTime = System.currentTimeMillis() - startTime;

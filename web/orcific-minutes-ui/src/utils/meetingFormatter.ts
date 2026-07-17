@@ -1,14 +1,20 @@
 import type { MeetingNotes } from '../models/MeetingNotes';
 
 export function formatMeetingNotes(notes: MeetingNotes): string {
-    return `
+    const formatList = (items?: string[]) =>
+        items && items.length > 0 ? items.map((i) => `- ${i}`).join('\n') : '';
 
-${notes.summary}
+    const summary = notes?.summary ?? '';
+    const decisions = formatList(notes?.decisions);
+    const actionItems = formatList(notes?.actionItems);
+    const openQuestions = formatList(notes?.openQuestions);
 
-${notes.keyDecisions.map((d) => `- ${d}`).join('\n')}
+    const sections: string[] = [];
 
-${notes.actionItems.map((a) => `- ${a}`).join('\n')}
+    if (summary) sections.push(summary);
+    if (decisions) sections.push('Key Decisions:\n' + decisions);
+    if (actionItems) sections.push('Action Items:\n' + actionItems);
+    if (openQuestions) sections.push('Open Questions:\n' + openQuestions);
 
-${notes.openQuestions.map((q) => `- ${q}`).join('\n')}
-`;
+    return sections.join('\n\n');
 }
