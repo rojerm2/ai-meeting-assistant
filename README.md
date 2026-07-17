@@ -159,6 +159,7 @@ npm run dev
 - Cloud deployment
 - Streaming
 - Audio and Video upload
+- Focus the RAG in one meeting/transcription only
 
 ---
 
