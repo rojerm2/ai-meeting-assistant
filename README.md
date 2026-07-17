@@ -111,9 +111,11 @@ No cloud AI APIs are required.
 ## Architecture
 
 See the architecture diagrams below.
-Backend Architecture
 
-[Tree](https://tree.nathanfriend.com/?s=(%27op6s!(%27fancyX~fullPath!false~trailLSlashX~rootDotX)~source!(%27source!%27backend3javaTcJWCJ*RagCJTcY*CorsCY*RUtClientCYTdto*ai*9795*08Op6s*087085*0RagAnswz5*0RagQuU670SearchRUult*Ai5*ApiError*Genza6MetadataWHistory5WNotUW7Save27Save25TeZW_EZWEZTeF*GlobalEFHandlz*InvalidAi5EFWProcUsLEF*8Communica6EFTmappzWMappzTrKW_RKWRKTsV*ai*0_L4940840PB40Rag40Retrieval40Similarity424PdfSVTApplica6.java33rUourcUTpBs*meetL-notU.pB*rag-pB.pBTtUt-data*meetL-1.txt%27)~vzsion!%271%27)*T00%20%202MeetL3%5Cn04SV*5RUponse6tion7RequUt*8Ollama90EmbeddLBromptFxcep6JontrollzKepositoryLingT30UesVzviceW*2X!trueYonfigZntity_Chunkzer%01z_ZYXWVUTLKJFB987654320*)
+Backend Architecture: [Tree](https://tree.nathanfriend.com/?s=(%27op6s!(%27fancyX~fullPath!false~trailLSlashX~rootDotX)~source!(%27source!%27backend3javaTcJWCJ*RagCJTcY*CorsCY*RUtClientCYTdto*ai*9795*08Op6s*087085*0RagAnswz5*0RagQuU670SearchRUult*Ai5*ApiError*Genza6MetadataWHistory5WNotUW7Save27Save25TeZW_EZWEZTeF*GlobalEFHandlz*InvalidAi5EFWProcUsLEF*8Communica6EFTmappzWMappzTrKW_RKWRKTsV*ai*0_L4940840PB40Rag40Retrieval40Similarity424PdfSVTApplica6.java33rUourcUTpBs*meetL-notU.pB*rag-pB.pBTtUt-data*meetL-1.txt%27)~vzsion!%271%27)*T00%20%202MeetL3%5Cn04SV*5RUponse6tion7RequUt*8Ollama90EmbeddLBromptFxcep6JontrollzKepositoryLingT30UesVzviceW*2X!trueYonfigZntity_Chunkzer%01z_ZYXWVUTLKJFB987654320*)
+
+Frontend Architecture: [Tree](https://tree.nathanfriend.com/?s=(%27opQ8s!(%27fancy5~fullPath!false~trailIgSlash5~rootDot5)~s6!(%27s6!%27fr8tend-comp8entKEmptyState3ExportButt8s3Header39Sidebar3LoadIgSpIner3GCard3N4Toast3RagAssistantPanel3UploadForm0x-modelKM290*GOResp8seOS6VserviceKm2ApiVtypeKn4VuQlKm2FormatterVApp7css-maI7html%27)~versi8!%271%27)*-J-%5CnJ0.ts2eetIg30x*4oQficaQ85!true6ource70x-Idex.8on9HistoryGM2NotesIinJ%20%20Ks*O0*RagQtiV0-%01VQOKJIG987654320-*)
+
 ---
 
 ## Running Locally
