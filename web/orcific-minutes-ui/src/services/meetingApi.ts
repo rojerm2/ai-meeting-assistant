@@ -3,14 +3,14 @@ import type { MeetingNotes } from '../models/MeetingNotes.ts';
 import type { RagResponse } from '../models/RagResponse.js';
 import type { RagSource } from '../models/RagSource.js';
 
-const API_BASE_URL = 'http://localhost:8080/api/meeting';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 export async function uploadTranscript(file: File, model: string): Promise<MeetingNotes> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('model', model);
 
-    const response = await fetch(`${API_BASE_URL}/upload`, {
+    const response = await fetch(`${API_BASE_URL}/meeting/upload`, {
         method: 'POST',
         body: formData,
     });
@@ -27,7 +27,7 @@ export async function saveMeeting(
     transcript: string,
     meetingNotes: MeetingNotes,
 ): Promise<number> {
-    const response = await fetch(`${API_BASE_URL}/meetings`, {
+    const response = await fetch(`${API_BASE_URL}/meeting`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export async function saveMeeting(
 }
 
 export async function getMeetingHistory(): Promise<MeetingHistory[]> {
-    const response = await fetch(`${API_BASE_URL}/meetings`);
+    const response = await fetch(`${API_BASE_URL}/meeting`);
 
     if (!response.ok) {
         throw new Error('Failed to load history.');
@@ -59,7 +59,7 @@ export async function getMeetingHistory(): Promise<MeetingHistory[]> {
 }
 
 export async function getMeeting(id: number): Promise<MeetingNotes> {
-    const response = await fetch(`${API_BASE_URL}/meetings/${id}`);
+    const response = await fetch(`${API_BASE_URL}/meeting/${id}`);
 
     if (!response.ok) {
         throw new Error('Meeting not found.');

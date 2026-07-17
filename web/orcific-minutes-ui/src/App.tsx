@@ -59,7 +59,7 @@ function App() {
             return;
         }
 
-        const response = await fetch(`http://localhost:8080/api/meeting/meetings/${id}/pdf`);
+        const response = await fetch(`http://localhost:8080/api/meeting/${id}/pdf`);
 
         if (!response.ok) {
             showNotification(
