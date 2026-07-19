@@ -1,7 +1,7 @@
-import { useState, type ChangeEvent } from 'react';
 import type { MeetingNotes } from '../models/MeetingNotes';
 import type { NotificationType } from '../types/notifications';
 import { saveMeeting, uploadTranscript } from '../services/meetingApi';
+import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 
 interface UploadFormProps {
     loading: boolean;
@@ -25,6 +25,33 @@ export default function UploadForm({
     const [model, setModel] = useState('qwen2.5:3b');
     const [notes, setNotes] = useState<MeetingNotes | null>(null);
     const [transcript, setTranscript] = useState('');
+    const [isDragging, setIsDragging] = useState(false);
+    const dragDepth = useRef(0);
+
+    const selectFile = (file: File | null) => {
+        if (!file) return;
+
+        const isTextFile = file.name.toLocaleLowerCase().endsWith('.txt');
+        if (!isTextFile) {
+            setError(
+                'Please upload a pain-text (.txt) transcript. Other file type is not supported yet.',
+            );
+            return;
+        }
+
+        setSelectedFile(file);
+        setNotes(null);
+        setError('');
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            onFileSelected(content);
+            setTranscript(content);
+        };
+
+        reader.readAsText(file);
+    };
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
@@ -39,6 +66,28 @@ export default function UploadForm({
             setTranscript(content);
         };
         reader.readAsText(file);
+    };
+
+    const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        dragDepth.current += 1;
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        dragDepth.current -= 1;
+
+        if (dragDepth.current === 0) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        dragDepth.current = 0;
+        setIsDragging(false);
+        selectFile(event.dataTransfer.files[0] ?? null);
     };
 
     const handleGenerate = async () => {
@@ -82,7 +131,7 @@ export default function UploadForm({
     };
 
     return (
-        <section className="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_-30px_rgba(15,23,42,0.35)] sm:p-8">
+        <section className="rounded-4xl border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_-30px_rgba(15,23,42,0.35)] sm:p-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h2 className="text-xl font-semibold tracking-tight text-slate-900">
@@ -104,28 +153,48 @@ export default function UploadForm({
                     </div>
                 )}
 
-                <label className="block rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 p-4 transition hover:border-indigo-300 hover:bg-indigo-50/40 sm:p-5">
-                    <span className="mb-2 block text-sm font-semibold text-slate-800">
+                <div
+                    onDragEnter={handleDragEnter}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`rounded-2xl border-2 border-dashed p-5 text-center transition sm:p-7 ${
+                        isDragging
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-slate-200 bg-slate-50/70 hover:border-indigo-300 hover:bg-indigo-50/40'
+                    }`}
+                >
+                    <span className="block text-sm font-semibold text-slate-800">
                         Transcript file
                     </span>
-                    <p className="mb-4 text-sm text-slate-500">
-                        Select a plain-text transcript (.txt).
+                    <p className="mt-2 text-sm text-slate-500">
+                        Drag and drop a <code>.txt</code> file here, or choose one from your device.
                     </p>
+
+                    <label
+                        htmlFor="transcript-file"
+                        className="mt-4 inline-flex cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                    >
+                        Choose text file
+                    </label>
+
                     <input
+                        id="transcript-file"
                         type="file"
                         accept=".txt,text/plain"
                         onChange={handleFileChange}
-                        className="block w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-indigo-700"
+                        className="sr-only"
                     />
+
                     {selectedFile && (
-                        <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-600">
+                        <div className="mt-5 flex items-center justify-center gap-2 text-sm font-medium text-slate-600">
                             <span className="grid h-6 w-7 place-items-center rounded-md bg-indigo-100 text-[10px] font-bold text-indigo-700">
                                 TXT
                             </span>
                             {selectedFile.name}
                         </div>
                     )}
-                </label>
+                </div>
 
                 {!notes && (
                     <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between">
