@@ -1,0 +1,31 @@
+# Environment and local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Runtime data
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Java / Maven
+core/target/
+*.class
+hs_err_pid*
+
+# Node / Vite
+web/orcific-minutes-ui/node_modules/
+web/orcific-minutes-ui/dist/
+web/orcific-minutes-ui/coverage/
+
+# IDE and operating-system files
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
