@@ -2,7 +2,6 @@ import { useState, type ChangeEvent } from 'react';
 import type { MeetingNotes } from '../models/MeetingNotes';
 import type { NotificationType } from '../types/notifications';
 import { saveMeeting, uploadTranscript } from '../services/meetingApi';
-import ExportButtons from './ExportButtons';
 
 interface UploadFormProps {
     loading: boolean;
@@ -26,30 +25,13 @@ export default function UploadForm({
     const [model, setModel] = useState('qwen2.5:3b');
     const [notes, setNotes] = useState<MeetingNotes | null>(null);
     const [transcript, setTranscript] = useState('');
-    const [id, setId] = useState<number>();
-    // const [loading, setLoading] = useState(false);
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
         setSelectedFile(file);
-        readFileContent(file);
-        // onFileSelected(file ? URL.createObjectURL(file) : null);
-        // setNotes({
-        //     summary: 'Sample summary',
-        //     keyDecisions: ['Decision 1', 'Decision 2'],
-        //     actionItems: ['Action Item 1'],
-        //     openQuestions: ['Open Question 1'],
-        //     metadata: {
-        //         model: 'Sample Model',
-        //         durationMs: 1234,
-        //         generatedAt: new Date().toISOString(),
-        //     },
-        // } as MeetingNotes);
-    };
-
-    const readFileContent = (file: File | null) => {
+        setNotes(null);
+        setError('');
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
             const content = e.target?.result as string;
@@ -68,15 +50,15 @@ export default function UploadForm({
             );
             return;
         }
-
         try {
+            setError('');
             onLoadingChange(true);
-            const notes = await uploadTranscript(selectedFile, model);
-            setNotes(notes);
-            onSuccess(notes);
-            onNotify('success', 'Notes generated', 'Meeting notes were generated successfully.');
-        } catch (err) {
-            setError('Unable to generate meeting notes.');
+            const generatedNotes = await uploadTranscript(selectedFile, model);
+            setNotes(generatedNotes);
+            onSuccess(generatedNotes);
+            onNotify('success', 'Notes generated', 'Your meeting notes are ready to review.');
+        } catch {
+            setError('Unable to generate meeting notes. Please try again.');
             onNotify(
                 'error',
                 'Generation failed',
@@ -88,67 +70,73 @@ export default function UploadForm({
     };
 
     const handleSaveMeeting = async () => {
-        const title = prompt('Meeting title:');
-
-        if (!title) return;
-
+        const title = prompt('Give this meeting a title:');
+        if (!title || !notes) return;
         try {
-            const id = await saveMeeting(title, transcript, notes as MeetingNotes);
+            const id = await saveMeeting(title, transcript, notes);
             onMeetingSaved?.(id);
-            onNotify('success', 'Meeting saved', `Meeting saved. ID = ${id}`);
-        } catch (err) {
+            onNotify('success', 'Meeting saved', 'This meeting is now available in your history.');
+        } catch {
             onNotify('error', 'Save failed', 'Unable to save meeting. Please try again.');
         }
     };
 
     return (
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_-30px_rgba(15,23,42,0.35)] sm:p-8">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h2 className="text-xl font-semibold text-slate-900">Generate meeting notes</h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                        Upload a transcript, choose a model, and turn it into a polished summary.
+                    <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+                        Create meeting notes
+                    </h2>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                        Upload a transcript and let your local model extract the important outcomes.
                     </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600">
-                    Step 1 · Upload
+                <div className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                    Upload
                 </div>
             </div>
 
             <div className="mt-6 space-y-4">
                 {error && (
-                    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
                         {error}
                     </div>
                 )}
 
-                <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-700">
+                <label className="block rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 p-4 transition hover:border-indigo-300 hover:bg-indigo-50/40 sm:p-5">
+                    <span className="mb-2 block text-sm font-semibold text-slate-800">
                         Transcript file
                     </span>
+                    <p className="mb-4 text-sm text-slate-500">
+                        Select a plain-text transcript (.txt).
+                    </p>
                     <input
                         type="file"
-                        accept=".txt"
+                        accept=".txt,text/plain"
                         onChange={handleFileChange}
-                        className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700 file:mr-4 file:rounded-full file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-white file:cursor-pointer hover:file:bg-slate-700"
+                        className="block w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 file:mr-4 file:cursor-pointer file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-white hover:file:bg-indigo-700"
                     />
                     {selectedFile && (
-                        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                            📄 {selectedFile.name}
+                        <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-600">
+                            <span className="grid h-6 w-7 place-items-center rounded-md bg-indigo-100 text-[10px] font-bold text-indigo-700">
+                                TXT
+                            </span>
+                            {selectedFile.name}
                         </div>
                     )}
                 </label>
 
                 {!notes && (
-                    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <p className="text-sm font-medium text-slate-800">Model</p>
-                            <p className="text-sm text-slate-500">
-                                Choose the local model for generation.
+                            <p className="text-sm font-semibold text-slate-800">Generation model</p>
+                            <p className="mt-0.5 text-sm text-slate-500">
+                                Choose the local model for this summary.
                             </p>
                         </div>
                         <select
-                            className="rounded-2xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-slate-400"
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-indigo-400"
                             value={model}
                             onChange={(e) => setModel(e.target.value)}
                         >
@@ -162,17 +150,16 @@ export default function UploadForm({
                 <button
                     onClick={handleGenerate}
                     disabled={loading || !selectedFile}
-                    className={`w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400 ${loading ? 'animate-pulse' : ''}`}
+                    className={`w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 hover:shadow-indigo-300 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none ${loading ? 'animate-pulse' : ''}`}
                 >
-                    {loading ? 'Generating...' : 'Generate Notes'}
+                    {loading ? 'Generating notes…' : 'Generate notes'}
                 </button>
-
                 {notes && (
                     <button
                         onClick={handleSaveMeeting}
-                        className="w-full rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                        className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
                     >
-                        Save Meeting
+                        Save meeting to history
                     </button>
                 )}
             </div>

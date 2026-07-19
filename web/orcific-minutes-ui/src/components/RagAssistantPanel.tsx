@@ -81,31 +81,33 @@ export default function RagAssistantPanel({ isEnabled, onNotify, compact = false
     };
 
     const panelClassName = compact
-        ? 'w-full overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm'
-        : 'w-full overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm';
+        ? 'w-full overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-[0_16px_45px_-30px_rgba(15,23,42,0.35)]'
+        : 'w-full overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_-30px_rgba(15,23,42,0.35)]';
 
     return (
         <section className={panelClassName}>
             <div className="mb-4 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <h3 className="text-lg font-semibold text-slate-900">Messaging</h3>
+                    <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+                        Ask your archive
+                    </h3>
                     <p className="mt-1 text-sm text-slate-500">
                         Ask questions about saved meetings and review the evidence.
                     </p>
                 </div>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+                <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-700">
                     RAG
                 </span>
             </div>
 
-            <div className="mb-4 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 max-h-80 overflow-y-auto">
+            <div className="mb-4 max-h-80 space-y-3 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/80 p-3">
                 {messages.map((message) => (
                     <div
                         key={message.id}
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`w-full max-w-[92%] rounded-2xl px-3 py-2.5 text-sm shadow-sm overflow-wrap-anywhere ${message.role === 'user' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700'}`}
+                            className={`w-full max-w-[92%] overflow-wrap-anywhere rounded-2xl px-3 py-2.5 text-sm shadow-sm ${message.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700'}`}
                         >
                             <p className="whitespace-pre-wrap">{message.content}</p>
 

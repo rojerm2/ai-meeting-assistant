@@ -27,6 +27,7 @@ function App() {
 
     const loadHistory = async () => {
         const meetingHistory = await getMeetingHistory();
+        meetingHistory.reverse();
         setHistory(meetingHistory);
     };
 
@@ -81,13 +82,17 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.15),_transparent_40%),linear-gradient(135deg,_#f8fafc_0%,_#f1f5f9_100%)]">
+        <div className="min-h-screen bg-[radial-gradient(circle_at_0%_0%,rgba(99,102,241,0.16),transparent_27%),radial-gradient(circle_at_100%_12%,rgba(20,184,166,0.11),transparent_23%),linear-gradient(145deg,#f8faff_0%,#f4f6fb_52%,#eef3fa_100%)]">
             <NotificationToast notifications={notifications} onDismiss={dismissNotification} />
-            <div className="mx-auto flex max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto flex max-w-350 flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
                 <Header />
 
-                <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-                    <main className="space-y-6">
+                <div className="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_360px] 2xl:grid-cols-[280px_minmax(0,1fr)_380px]">
+                    <aside className="xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start">
+                        <HistorySidebar meetings={history} onOpen={openMeeting} />
+                    </aside>
+
+                    <main className="min-w-0 space-y-6">
                         {notes !== null && transcript == null && (
                             <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm">
                                 Meeting notes generated successfully.
@@ -100,7 +105,10 @@ function App() {
                             onSuccess={setNotes}
                             onFileSelected={setTranscript}
                             onNotify={showNotification}
-                            onMeetingSaved={setId}
+                            onMeetingSaved={(meetingId) => {
+                                setId(meetingId);
+                                void loadHistory();
+                            }}
                         />
 
                         {!loading && notes && (
@@ -116,14 +124,11 @@ function App() {
                         {loading && <LoadingSpinner />}
                     </main>
 
-                    <aside className="lg:sticky lg:top-6 lg:self-start">
-                        <div className="space-y-4">
-                            <HistorySidebar meetings={history} onOpen={openMeeting} />
-                            <RagAssistantPanel
-                                isEnabled={id != null || history.length > 0}
-                                onNotify={showNotification}
-                            />
-                        </div>
+                    <aside className="xl:sticky xl:top-6 xl:self-start">
+                        <RagAssistantPanel
+                            isEnabled={id != null || history.length > 0}
+                            onNotify={showNotification}
+                        />
                     </aside>
                 </div>
             </div>
