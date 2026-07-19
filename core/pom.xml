@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.orcific</groupId>
-    <artifactId>ai-meeting-assistant</artifactId>
+    <artifactId>orcific-minutes</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>ai-meeting-assistant</name>
-    <description>ai-meeting-assistant</description>
+    <name>orcific-minutes</name>
+    <description>orcific-minutes</description>
     <url/>
     <licenses>
         <license/>

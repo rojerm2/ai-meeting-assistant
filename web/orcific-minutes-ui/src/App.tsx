@@ -4,6 +4,7 @@ import MeetingNotesCard from './components/MeetingNotesCard';
 import LoadingSpinner from './components/LoadingSpinner';
 import EmptyState from './components/EmptyState';
 import HistorySidebar from './components/HistorySidebar';
+import RagAssistantPanel from './components/RagAssistantPanel';
 import NotificationToast from './components/NotificationToast';
 
 import type { MeetingNotes } from './models/MeetingNotes';
@@ -26,6 +27,7 @@ function App() {
 
     const loadHistory = async () => {
         const meetingHistory = await getMeetingHistory();
+        meetingHistory.reverse();
         setHistory(meetingHistory);
     };
 
@@ -58,7 +60,7 @@ function App() {
             return;
         }
 
-        const response = await fetch(`http://localhost:8080/api/meeting/meetings/${id}/pdf`);
+        const response = await fetch(`http://localhost:8080/api/meeting/${id}/pdf`);
 
         if (!response.ok) {
             showNotification(
@@ -80,20 +82,20 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-[radial-gradient(circle_at_0%_0%,rgba(99,102,241,0.16),transparent_27%),radial-gradient(circle_at_100%_12%,rgba(20,184,166,0.11),transparent_23%),linear-gradient(145deg,#f8faff_0%,#f4f6fb_52%,#eef3fa_100%)]">
             <NotificationToast notifications={notifications} onDismiss={dismissNotification} />
-            <div className="max-w-6xl px-6 py-6 mx-auto">
+            <div className="mx-auto flex max-w-350 flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
                 <Header />
 
-                <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
-                    <aside className="rounded-4xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)_360px] 2xl:grid-cols-[280px_minmax(0,1fr)_380px]">
+                    <aside className="xl:sticky xl:top-6 xl:max-h-[calc(100vh-3rem)] xl:self-start">
                         <HistorySidebar meetings={history} onOpen={openMeeting} />
                     </aside>
 
-                    <main className="space-y-6">
+                    <main className="min-w-0 space-y-6">
                         {notes !== null && transcript == null && (
-                            <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-green-700">
-                                ✅ Meeting notes generated successfully.
+                            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-sm">
+                                Meeting notes generated successfully.
                             </div>
                         )}
 
@@ -103,6 +105,10 @@ function App() {
                             onSuccess={setNotes}
                             onFileSelected={setTranscript}
                             onNotify={showNotification}
+                            onMeetingSaved={(meetingId) => {
+                                setId(meetingId);
+                                void loadHistory();
+                            }}
                         />
 
                         {!loading && notes && (
@@ -117,6 +123,13 @@ function App() {
 
                         {loading && <LoadingSpinner />}
                     </main>
+
+                    <aside className="xl:sticky xl:top-6 xl:self-start">
+                        <RagAssistantPanel
+                            isEnabled={id != null || history.length > 0}
+                            onNotify={showNotification}
+                        />
+                    </aside>
                 </div>
             </div>
         </div>

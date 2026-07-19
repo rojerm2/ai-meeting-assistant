@@ -1,8 +1,7 @@
-import { useState, type ChangeEvent } from 'react';
 import type { MeetingNotes } from '../models/MeetingNotes';
 import type { NotificationType } from '../types/notifications';
 import { saveMeeting, uploadTranscript } from '../services/meetingApi';
-import ExportButtons from './ExportButtons';
+import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 
 interface UploadFormProps {
     loading: boolean;
@@ -10,6 +9,7 @@ interface UploadFormProps {
     onSuccess: (notes: MeetingNotes) => void;
     onFileSelected: (transcript: string) => void;
     onNotify: (type: NotificationType, title: string, message?: string) => void;
+    onMeetingSaved?: (meetingId: number) => void;
 }
 
 export default function UploadForm({
@@ -18,35 +18,30 @@ export default function UploadForm({
     onSuccess,
     onFileSelected,
     onNotify,
+    onMeetingSaved,
 }: UploadFormProps): import('react').JSX.Element {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [error, setError] = useState('');
     const [model, setModel] = useState('qwen2.5:3b');
     const [notes, setNotes] = useState<MeetingNotes | null>(null);
     const [transcript, setTranscript] = useState('');
-    const [id, setId] = useState<number>();
-    // const [loading, setLoading] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragDepth = useRef(0);
 
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0] ?? null;
-        setSelectedFile(file);
-        readFileContent(file);
-        // onFileSelected(file ? URL.createObjectURL(file) : null);
-        // setNotes({
-        //     summary: 'Sample summary',
-        //     keyDecisions: ['Decision 1', 'Decision 2'],
-        //     actionItems: ['Action Item 1'],
-        //     openQuestions: ['Open Question 1'],
-        //     metadata: {
-        //         model: 'Sample Model',
-        //         durationMs: 1234,
-        //         generatedAt: new Date().toISOString(),
-        //     },
-        // } as MeetingNotes);
-    };
-
-    const readFileContent = (file: File | null) => {
+    const selectFile = (file: File | null) => {
         if (!file) return;
+
+        const isTextFile = file.name.toLocaleLowerCase().endsWith('.txt');
+        if (!isTextFile) {
+            setError(
+                'Please upload a pain-text (.txt) transcript. Other file type is not supported yet.',
+            );
+            return;
+        }
+
+        setSelectedFile(file);
+        setNotes(null);
+        setError('');
 
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -54,7 +49,45 @@ export default function UploadForm({
             onFileSelected(content);
             setTranscript(content);
         };
+
         reader.readAsText(file);
+    };
+
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+        setSelectedFile(file);
+        setNotes(null);
+        setError('');
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            onFileSelected(content);
+            setTranscript(content);
+        };
+        reader.readAsText(file);
+    };
+
+    const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        dragDepth.current += 1;
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        dragDepth.current -= 1;
+
+        if (dragDepth.current === 0) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        dragDepth.current = 0;
+        setIsDragging(false);
+        selectFile(event.dataTransfer.files[0] ?? null);
     };
 
     const handleGenerate = async () => {
@@ -66,15 +99,15 @@ export default function UploadForm({
             );
             return;
         }
-
         try {
+            setError('');
             onLoadingChange(true);
-            const notes = await uploadTranscript(selectedFile, model);
-            setNotes(notes);
-            onSuccess(notes);
-            onNotify('success', 'Notes generated', 'Meeting notes were generated successfully.');
-        } catch (err) {
-            setError('Unable to generate meeting notes.');
+            const generatedNotes = await uploadTranscript(selectedFile, model);
+            setNotes(generatedNotes);
+            onSuccess(generatedNotes);
+            onNotify('success', 'Notes generated', 'Your meeting notes are ready to review.');
+        } catch {
+            setError('Unable to generate meeting notes. Please try again.');
             onNotify(
                 'error',
                 'Generation failed',
@@ -86,85 +119,119 @@ export default function UploadForm({
     };
 
     const handleSaveMeeting = async () => {
-        const title = prompt('Meeting title:');
-
-        if (!title) return;
-
+        const title = prompt('Give this meeting a title:');
+        if (!title || !notes) return;
         try {
-            const id = await saveMeeting(title, transcript, notes as MeetingNotes);
-            onNotify('success', 'Meeting saved', `Meeting saved. ID = ${id}`);
-        } catch (err) {
+            const id = await saveMeeting(title, transcript, notes);
+            onMeetingSaved?.(id);
+            onNotify('success', 'Meeting saved', 'This meeting is now available in your history.');
+        } catch {
             onNotify('error', 'Save failed', 'Unable to save meeting. Please try again.');
         }
     };
 
     return (
-        <div className="p-8 mb-1 bg-white shadow-md rounded-xl">
-            {error && <div className="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">{error}</div>}
-            {selectedFile && <div className="text-sm text-slate-600">📄 {selectedFile.name}</div>}
-            <input
-                type="file"
-                accept=".txt"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-slate-700
-                   file:mr-4
-                   file:rounded-md
-                   file:border-0
-                   file:bg-blue-600
-                   file:px-4
-                   file:py-2
-                   file:text-white
-                   file:cursor-pointer
-                   hover:file:bg-blue-700
-                   mb-1
-                   bg-slate-200
-                   p-1.5
-                   rounded-md
-                   mt-4
-                   cursor-pointer
-                  hover:bg-slate-300"
-            />
-            <button
-                onClick={handleGenerate}
-                disabled={loading || !selectedFile}
-                className={`mt-1 
-          w-full rounded-lg bg-blue-600 py-3 
-          text-white transition hover:bg-blue-700 
-          cursor-pointer
-          ${loading || !selectedFile ? 'disabled:cursor-not-allowed disabled:bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'}`}
-                // className={`
-                //     w-full rounded-lg py-3 font-semibold text-white transition
-
-                //     ${loading ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
-                //     `}
-            >
-                {loading ? 'Generating...' : 'Generate Notes'}
-            </button>
-            {!notes && (
+        <section className="rounded-4xl border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_-30px_rgba(15,23,42,0.35)] sm:p-8">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    Select a model:
-                    <select
-                        className="p-2 mt-4 ml-2 border rounded-md border-slate-300"
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                    >
-                        <option value="qwen2.5:3b">Qwen 2.5 3B</option>
-                        <option value="gemma3:4b">Gemma 3 4B</option>
-                        <option value="phi3:mini">Phi-3 Mini</option>
-                    </select>
+                    <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+                        Create meeting notes
+                    </h2>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                        Upload a transcript and let your local model extract the important outcomes.
+                    </p>
                 </div>
-            )}
+                <div className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                    Upload
+                </div>
+            </div>
 
-            {notes && (
-                <button
-                    onClick={handleSaveMeeting}
-                    className="rounded bg-green-600 px-4 py-2 text-white mt-4"
+            <div className="mt-6 space-y-4">
+                {error && (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                        {error}
+                    </div>
+                )}
+
+                <div
+                    onDragEnter={handleDragEnter}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`rounded-2xl border-2 border-dashed p-5 text-center transition sm:p-7 ${
+                        isDragging
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-slate-200 bg-slate-50/70 hover:border-indigo-300 hover:bg-indigo-50/40'
+                    }`}
                 >
-                    Save Meeting
-                </button>
-            )}
+                    <span className="block text-sm font-semibold text-slate-800">
+                        Transcript file
+                    </span>
+                    <p className="mt-2 text-sm text-slate-500">
+                        Drag and drop a <code>.txt</code> file here, or choose one from your device.
+                    </p>
 
-            {/* <ExportButtons meetingNotes={notes as MeetingNotes} /> */}
-        </div>
+                    <label
+                        htmlFor="transcript-file"
+                        className="mt-4 inline-flex cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                    >
+                        Choose text file
+                    </label>
+
+                    <input
+                        id="transcript-file"
+                        type="file"
+                        accept=".txt,text/plain"
+                        onChange={handleFileChange}
+                        className="sr-only"
+                    />
+
+                    {selectedFile && (
+                        <div className="mt-5 flex items-center justify-center gap-2 text-sm font-medium text-slate-600">
+                            <span className="grid h-6 w-7 place-items-center rounded-md bg-indigo-100 text-[10px] font-bold text-indigo-700">
+                                TXT
+                            </span>
+                            {selectedFile.name}
+                        </div>
+                    )}
+                </div>
+
+                {!notes && (
+                    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p className="text-sm font-semibold text-slate-800">Generation model</p>
+                            <p className="mt-0.5 text-sm text-slate-500">
+                                Choose the local model for this summary.
+                            </p>
+                        </div>
+                        <select
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition focus:border-indigo-400"
+                            value={model}
+                            onChange={(e) => setModel(e.target.value)}
+                        >
+                            <option value="qwen2.5:3b">Qwen 2.5 3B</option>
+                            <option value="gemma3:4b">Gemma 3 4B</option>
+                            <option value="phi3:mini">Phi-3 Mini</option>
+                        </select>
+                    </div>
+                )}
+
+                <button
+                    onClick={handleGenerate}
+                    disabled={loading || !selectedFile}
+                    className={`w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 hover:shadow-indigo-300 disabled:cursor-not-allowed disabled:bg-slate-400 disabled:shadow-none ${loading ? 'animate-pulse' : ''}`}
+                >
+                    {loading ? 'Generating notes…' : 'Generate notes'}
+                </button>
+                {notes && (
+                    <button
+                        onClick={handleSaveMeeting}
+                        className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                    >
+                        Save meeting to history
+                    </button>
+                )}
+            </div>
+        </section>
     );
 }
