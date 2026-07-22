@@ -46,4 +46,16 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.internalServerError().body(error);
     }
+
+    @ExceptionHandler(WhisperClientException.class)
+    public ResponseEntity<ApiError> handleException(WhisperClientException e) {
+        ApiError error = new ApiError(
+                LocalDateTime.now(),
+                HttpStatus.BAD_GATEWAY.value(),
+                HttpStatus.BAD_GATEWAY.getReasonPhrase(),
+                e.getMessage()
+        );
+
+        return ResponseEntity.internalServerError().body(error);
+    }
 }

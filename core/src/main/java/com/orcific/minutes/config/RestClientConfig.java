@@ -8,11 +8,23 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class RestClientConfig {
 
-    @Value("${ollama.base-url}")
-    private String ollamaBaseUrl;
+//    @Value("${ollama.base-url}")
+//    private String ollamaBaseUrl;
+//
+//    @Value("${whiser.base-url}")
+//    private String whisperBaseUrl;
 
     @Bean
-    public RestClient ollamaRestClient() {
-        return RestClient.builder().baseUrl(ollamaBaseUrl).build();
+    public RestClient restClient() {
+        return RestClient.create();
     }
+//    @Bean
+//    public RestClient ollamaRestClient() {
+//        return RestClient.builder().baseUrl(ollamaBaseUrl).build();
+//    }
+//
+//    @Bean
+//    public RestClient whisperRestClient() {
+//        return RestClient.builder().baseUrl(whisperBaseUrl).build();
+//    }
 }

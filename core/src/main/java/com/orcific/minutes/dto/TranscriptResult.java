@@ -1,6 +1,6 @@
 package com.orcific.minutes.dto;
 
 public record TranscriptResult(
-        String transcript
+        String text
 ) {
 }

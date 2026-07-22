@@ -1,5 +1,6 @@
 package com.orcific.minutes.service.ai;
 
+import com.orcific.minutes.config.OllamaProperties;
 import com.orcific.minutes.dto.ai.EmbeddingRequest;
 import com.orcific.minutes.dto.ai.EmbeddingResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,15 +14,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EmbeddingService {
     private final RestClient restClient;
-
-    @Value("${ollama.base-url}")
-    private String ollamaurl;
-
-    @Value("${ollama.embedding-model}")
-    private String embeddingModel;
+    private final OllamaProperties ollamaProperties;
 
     public List<Double> embed(String text){
-        EmbeddingRequest embeddingRequest = new EmbeddingRequest(embeddingModel, text);
+        EmbeddingRequest embeddingRequest = new EmbeddingRequest(ollamaProperties.getEmbeddingModel(), text);
 
         EmbeddingResponse response = restClient.post()
                 .uri("/api/embed")

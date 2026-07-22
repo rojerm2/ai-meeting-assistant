@@ -1,5 +1,6 @@
 package com.orcific.minutes.service.ai;
 
+import com.orcific.minutes.config.OllamaProperties;
 import com.orcific.minutes.dto.ai.OllamaOptions;
 import com.orcific.minutes.dto.ai.OllamaRequest;
 import com.orcific.minutes.dto.ai.OllamaResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.client.RestClientException;
 public class OllamaService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OllamaService.class);
     private final RestClient restClient;
+    private final OllamaProperties ollamaProperties;
 
     public String generateMeetingNotes(String prompt, String model, double temperature){
         OllamaRequest request = new OllamaRequest(
@@ -45,7 +47,7 @@ public class OllamaService {
     private @Nullable OllamaResponse sendHttpPostRequest(OllamaRequest request) {
         LOGGER.info("Sending HTTP request to Ollama server.");
         OllamaResponse response = restClient.post()
-                .uri("/api/generate")
+                .uri(ollamaProperties.getBaseUrl() + "/api/generate")
                 .body(request)
                 .retrieve()
                 .body(OllamaResponse.class);
