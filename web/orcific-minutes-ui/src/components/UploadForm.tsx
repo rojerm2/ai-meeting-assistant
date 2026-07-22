@@ -7,7 +7,7 @@ interface UploadFormProps {
     loading: boolean;
     onLoadingChange: (loading: boolean) => void;
     onSuccess: (notes: MeetingNotes) => void;
-    onFileSelected: (transcript: string) => void;
+    setTranscript: (transcript: string) => void;
     onNotify: (type: NotificationType, title: string, message?: string) => void;
     onMeetingSaved?: (meetingId: number) => void;
 }
@@ -16,7 +16,7 @@ export default function UploadForm({
     loading,
     onLoadingChange,
     onSuccess,
-    onFileSelected,
+    setTranscript,
     onNotify,
     onMeetingSaved,
 }: UploadFormProps): import('react').JSX.Element {
@@ -24,17 +24,18 @@ export default function UploadForm({
     const [error, setError] = useState('');
     const [model, setModel] = useState('qwen2.5:3b');
     const [notes, setNotes] = useState<MeetingNotes | null>(null);
-    const [transcript, setTranscript] = useState('');
     const [isDragging, setIsDragging] = useState(false);
     const dragDepth = useRef(0);
+    let transcript = '';
 
     const selectFile = (file: File | null) => {
         if (!file) return;
 
         const isTextFile = file.name.toLocaleLowerCase().endsWith('.txt');
-        if (!isTextFile) {
+        const isAudioFile = file.type.startsWith('audio/');
+        if (!isTextFile && !isAudioFile) {
             setError(
-                'Please upload a pain-text (.txt) transcript. Other file type is not supported yet.',
+                'Please upload a pain-text (.txt) or audio transcript. Other file type is not supported yet.',
             );
             return;
         }
@@ -43,29 +44,34 @@ export default function UploadForm({
         setNotes(null);
         setError('');
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const content = e.target?.result as string;
-            onFileSelected(content);
-            setTranscript(content);
-        };
+        if (isTextFile) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target?.result as string;
+                setTranscript(content);
+                transcript = content;
+            };
 
-        reader.readAsText(file);
+            reader.readAsText(file);
+        } else if (isAudioFile) {
+        }
     };
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
-        setSelectedFile(file);
-        setNotes(null);
-        setError('');
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const content = e.target?.result as string;
-            onFileSelected(content);
-            setTranscript(content);
-        };
-        reader.readAsText(file);
+        selectFile(file);
+        // setSelectedFile(file);
+        // setNotes(null);
+        // setError('');
+
+        // if (!file) return;
+        // const reader = new FileReader();
+        // reader.onload = (e) => {
+        //     const content = e.target?.result as string;
+        //     onFileSelected(content);
+        //     setTranscript(content);
+        // };
+        // reader.readAsText(file);
     };
 
     const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
@@ -168,7 +174,8 @@ export default function UploadForm({
                         Transcript file
                     </span>
                     <p className="mt-2 text-sm text-slate-500">
-                        Drag and drop a <code>.txt</code> file here, or choose one from your device.
+                        Drag and drop a <code>.txt</code> or <code>audio</code> file here, or choose
+                        one from your device.
                     </p>
 
                     <label
@@ -181,7 +188,7 @@ export default function UploadForm({
                     <input
                         id="transcript-file"
                         type="file"
-                        accept=".txt,text/plain"
+                        accept=".txt,audio/*"
                         onChange={handleFileChange}
                         className="sr-only"
                     />

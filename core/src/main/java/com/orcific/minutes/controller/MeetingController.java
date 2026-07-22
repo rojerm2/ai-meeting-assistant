@@ -1,9 +1,12 @@
 package com.orcific.minutes.controller;
 
 import com.orcific.minutes.dto.*;
+import com.orcific.minutes.service.AudioService;
 import com.orcific.minutes.service.MeetingService;
 import com.orcific.minutes.service.PdfService;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,8 @@ import java.util.List;
 public class MeetingController {
     private final MeetingService meetingService;
     private final PdfService pdfService;
+    private final AudioService audioService;
+    private final Logger logger = LoggerFactory.getLogger(MeetingController.class);
 
     @PostMapping("/summarize")
     public MeetingNotes summarize(@RequestBody MeetingRequest meetingRequest) {
@@ -34,14 +39,25 @@ public class MeetingController {
         if(file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }
-        String transcript ="";
-        try {
-            transcript =
-                    new String(file.getBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+        String contentType = file.getContentType();
+        boolean isAudioFile = contentType.startsWith("audio/");
+        boolean isTextFile =  contentType.startsWith("text/plain");
+
+        if(isTextFile) {
+            String transcript ="";
+            try {
+                transcript =
+                        new String(file.getBytes(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return meetingService.summarizeMeeting(transcript, model);
+        } else if(isAudioFile){
+            return audioService.generateMeetingNotes(file, model);
         }
-        return meetingService.summarizeMeeting(transcript, model);
+
+        return null;
     }
 
     @PostMapping()

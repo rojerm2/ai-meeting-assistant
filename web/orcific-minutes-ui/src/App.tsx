@@ -103,7 +103,7 @@ function App() {
                             loading={loading}
                             onLoadingChange={setLoading}
                             onSuccess={setNotes}
-                            onFileSelected={setTranscript}
+                            setTranscript={setTranscript}
                             onNotify={showNotification}
                             onMeetingSaved={(meetingId) => {
                                 setId(meetingId);
