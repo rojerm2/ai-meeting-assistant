@@ -21,6 +21,7 @@ public class RagController {
 
     @PostMapping("/ask")
     public RagAnswerResponse askMeeting(@RequestBody RagQuestionRequest request) {
+
         return ragService.ask(request);
     }
 
@@ -31,6 +32,6 @@ public class RagController {
 
     @GetMapping("/search")
     public List<SearchResult> search(@RequestParam String text){
-        return retrievalService.retrieveTop3Embeddings(text, 3);
+        return retrievalService.retrieveTop3Embeddings(0, text, 3);
     }
 }

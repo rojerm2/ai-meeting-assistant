@@ -101,6 +101,7 @@ function App() {
 
                         <UploadForm
                             loading={loading}
+                            transcript={transcript}
                             onLoadingChange={setLoading}
                             onSuccess={setNotes}
                             setTranscript={setTranscript}
@@ -128,6 +129,7 @@ function App() {
                         <RagAssistantPanel
                             isEnabled={id != null || history.length > 0}
                             onNotify={showNotification}
+                            meetingId={id}
                         />
                     </aside>
                 </div>

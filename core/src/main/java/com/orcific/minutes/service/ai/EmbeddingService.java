@@ -20,7 +20,7 @@ public class EmbeddingService {
         EmbeddingRequest embeddingRequest = new EmbeddingRequest(ollamaProperties.getEmbeddingModel(), text);
 
         EmbeddingResponse response = restClient.post()
-                .uri("/api/embed")
+                .uri(ollamaProperties.getBaseUrl() + "/api/embed")
                 .body(embeddingRequest)
                 .retrieve()
                 .body(EmbeddingResponse.class);

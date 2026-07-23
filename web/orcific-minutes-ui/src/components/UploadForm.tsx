@@ -5,6 +5,7 @@ import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 
 interface UploadFormProps {
     loading: boolean;
+    transcript: string;
     onLoadingChange: (loading: boolean) => void;
     onSuccess: (notes: MeetingNotes) => void;
     setTranscript: (transcript: string) => void;
@@ -14,6 +15,7 @@ interface UploadFormProps {
 
 export default function UploadForm({
     loading,
+    transcript,
     onLoadingChange,
     onSuccess,
     setTranscript,
@@ -26,7 +28,6 @@ export default function UploadForm({
     const [notes, setNotes] = useState<MeetingNotes | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const dragDepth = useRef(0);
-    let transcript = '';
 
     const selectFile = (file: File | null) => {
         if (!file) return;
@@ -49,7 +50,6 @@ export default function UploadForm({
             reader.onload = (e) => {
                 const content = e.target?.result as string;
                 setTranscript(content);
-                transcript = content;
             };
 
             reader.readAsText(file);

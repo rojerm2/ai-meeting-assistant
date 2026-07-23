@@ -14,6 +14,7 @@ interface Props {
     isEnabled: boolean;
     onNotify: (type: 'success' | 'error' | 'info', title: string, message?: string) => void;
     compact?: boolean;
+    meetingId: number | undefined;
 }
 
 const modelOptions = [
@@ -22,7 +23,12 @@ const modelOptions = [
     { value: 'phi3:mini', label: 'Phi-3 Mini' },
 ];
 
-export default function RagAssistantPanel({ isEnabled, onNotify, compact = false }: Props) {
+export default function RagAssistantPanel({
+    isEnabled,
+    onNotify,
+    compact = false,
+    meetingId,
+}: Props) {
     const [question, setQuestion] = useState('');
     const [model, setModel] = useState('qwen2.5:3b');
     const [messages, setMessages] = useState<Message[]>([
@@ -54,7 +60,7 @@ export default function RagAssistantPanel({ isEnabled, onNotify, compact = false
         setIsLoading(true);
 
         try {
-            const response: RagResponse = await askMeetingRag(trimmedQuestion, model);
+            const response: RagResponse = await askMeetingRag(meetingId, trimmedQuestion, model);
             const assistantMessage: Message = {
                 id: `${Date.now()}-assistant`,
                 role: 'assistant',

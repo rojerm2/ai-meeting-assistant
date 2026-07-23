@@ -23,7 +23,7 @@ public class RagService {
     private final Logger logger = LoggerFactory.getLogger(RagService.class);
 
     public RagAnswerResponse ask(RagQuestionRequest request){
-        List<SearchResult> chunks = retrievalService.retrieveTop3Embeddings(request.question(), 3);
+        List<SearchResult> chunks = retrievalService.retrieveTop3Embeddings(request.meetingId(), request.question(), 3);
 
         String context = buildContext(chunks);
         String prompt = buildPrompt(context, request.question());

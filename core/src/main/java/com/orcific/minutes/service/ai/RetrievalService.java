@@ -18,12 +18,12 @@ public class RetrievalService {
     private final SimilarityService similarityService;
     private final ObjectMapper objectMapper;
 
-    public List<SearchResult> retrieveTop3Embeddings(String question, int topK){
+    public List<SearchResult> retrieveTop3Embeddings(long meetingId, String question, int topK){
 //        List<Double> chunkSimilarityList = new ArrayList<>();
         List<SearchResult> results = new ArrayList<>();
 
         List<Double> questionVector = embeddingService.embed(question);
-        List<MeetingChunkEntity> chunkEntityList = meetingChunkRepository.findAll();
+        List<MeetingChunkEntity> chunkEntityList = meetingChunkRepository.findAllByMeetingId(meetingId);
 
         for (MeetingChunkEntity meetingChunkEntity : chunkEntityList) {
                List<Double> chunkVector = objectMapper.readValue(

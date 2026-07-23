@@ -1,7 +1,7 @@
-import type { MeetingHistory } from '../models/MeetingHistory.js';
+import type { MeetingHistory } from '../models/MeetingHistory.ts';
 import type { MeetingNotes } from '../models/MeetingNotes.ts';
-import type { RagResponse } from '../models/RagResponse.js';
-import type { RagSource } from '../models/RagSource.js';
+import type { RagResponse } from '../models/RagResponse.ts';
+import type { RagQuestionRequest } from '../models/RagQuestionRequest.ts';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -68,13 +68,18 @@ export async function getMeeting(id: number): Promise<MeetingNotes> {
     return await response.json();
 }
 
-export async function askMeetingRag(question: string, model: string): Promise<RagResponse> {
+export async function askMeetingRag(
+    meetingId: number | undefined,
+    question: string,
+    model: string,
+): Promise<RagResponse> {
     const response = await fetch(`${API_BASE_URL}/rag/ask`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question, model }),
+        body: JSON.stringify({ meetingId, question, model } as RagQuestionRequest),
+        // body: JSON.stringify({ question, model }),
     });
 
     if (!response.ok) {
